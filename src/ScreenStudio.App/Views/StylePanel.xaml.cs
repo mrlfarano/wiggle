@@ -51,7 +51,7 @@ public sealed partial class StylePanel : UserControl
         if (AspectBox.SelectedItem is ComboBoxItem item && item.Tag is Core.AspectRatio.AspectRatioMode mode)
         {
             ZoomVm.AspectRatio = mode;
-            _setAspect(mode);
+            _setAspect?.Invoke(mode);
             StyleChanged?.Invoke();
         }
     }
@@ -66,7 +66,7 @@ public sealed partial class StylePanel : UserControl
             3 => SmoothingIntensity.Heavy,
             _ => SmoothingIntensity.Medium,
         };
-        _setSmoothing(intensity);
+        _setSmoothing?.Invoke(intensity);
         StyleChanged?.Invoke();
     }
 

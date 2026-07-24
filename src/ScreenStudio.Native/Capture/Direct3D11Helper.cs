@@ -40,7 +40,7 @@ internal static class Direct3D11Helper
         if (hr < 0) throw Marshal.GetExceptionForHR(hr)!;
 
         var dxgiIid = IID_IDXGIDevice;
-        hr = Marshal.QueryInterface(device, ref dxgiIid, out IntPtr dxgiDevice);
+        hr = Marshal.QueryInterface(device, in dxgiIid, out IntPtr dxgiDevice);
         if (hr < 0) throw Marshal.GetExceptionForHR(hr)!;
         return dxgiDevice;
     }

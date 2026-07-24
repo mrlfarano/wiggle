@@ -1,203 +1,74 @@
-# Implementation Plan: Screen Studio Clone
+# Implementation Plan: Screen Studio Clone (Windows 11)
 
-## Phase 0: Foundation (Week 1)
-**Goal:** Make all technical decisions and set up project infrastructure
+> **Updated 2026-07-24** — retargeted from macOS to Windows 11; all phases reflect the actual
+> C#/.NET 10 + WinUI 3 + Windows App SDK stack. The original plan described macOS/Swift; this
+> version is the source of truth. See `prd-screenstudio-clone.md` for the full PRD.
 
-### Tasks
-1. **Tech Stack Decision**
-   - Evaluate: Swift/SwiftUI vs Tauri vs Electron
-   - Decision criteria: team skills, performance requirements, distribution
-   - Recommended: Swift/SwiftUI (native performance, best macOS integration)
+## Completed Phases (001–022)
 
-2. **Project Setup**
-   - Initialize Xcode project
-   - Set up version control, CI/CD
-   - Define coding standards
+All 22 tasks are complete. The phases below are the retrospective structure.
 
-3. **Architecture Finalization**
-   - Define component interfaces
-   - Choose data structures for cursor tracking, timeline, zoom keyframes
-   - Select rendering engine (Core Animation, AVFoundation)
+### Phase 0: Foundation (001)
+- ✅ Tech stack decision: C# / .NET 10 + WinUI 3
+- ✅ Windows 11 API mapping: WGC (capture), Media Foundation (encode), WASAPI (audio), WH_MOUSE_LL (cursor)
+- ✅ Solution scaffolded: Core (engine), Native (Windows adapters), App (WinUI)
 
-**Deliverable:** Running app with basic window structure
+### Phase 1: Core Recording (002)
+- ✅ Screen capture: FFmpegScreenCapture (gdigrab) + WindowsScreenCapture (WGC)
+- ✅ Cursor tracking: CursorHook (WH_MOUSE_LL) + CursorEventLogger (binary persist)
+- ✅ Recording controls: RecordingSession state machine (Idle/Recording/Paused/Stopped)
 
----
+### Phase 2: Cursor Smoothing (003)
+- ✅ Centripetal Catmull-Rom (Barry–Goldman) with configurable intensity
+- ✅ Click-anchor preservation; 60fps benchmark (812ms for 10-min clip)
 
-## Phase 1: Core Recording (Weeks 2-3)
-**Goal:** Capture screen and cursor with high precision
+### Phase 3: Auto-Zoom (004)
+- ✅ ZoomDetector (click/drag/pause detection with min-gap)
+- ✅ ZoomCamera (ease-in/out cubic interpolation)
+- ✅ FrameCompositor (CPU RGB32 zoom transform + cursor overlay)
 
-### Tasks
-1. **Screen Capture Module**
-   - CGDisplayStream or Screen Capture Kit integration
-   - Frame buffer management (circular buffer)
-   - 60fps capture with minimal CPU overhead
+### Phase 4: Timeline Editor (005)
+- ✅ RecordingTimeline (trim/cut segments, keyframe add/move/remove, playhead snap)
 
-2. **Cursor Tracking System**
-   - High-precision cursor event logging (CGEvent tap)
-   - Timestamp synchronization with video frames
-   - Click event detection
+### Phase 5: Export Engine (006)
+- ✅ ExportPipeline (async, cancellable, progress-reporting)
+- ✅ FfmpegEncoder (H.264/HEVC/GIF/WebM via libx264/libvpx)
+- ✅ MediaFoundationEncoder (MF sink writer, NVENC/QSV/AMF — compile-verified)
+- ✅ ExportSettingsViewModel + ExportSettingsConsoleUi + presets
 
-3. **Basic Recording UI**
-   - Recording controls (start/stop/pause)
-   - Recording indicator
-   - Basic preview window
+### Phase 6: Additional Features (007–009, 016–020)
+- ✅ Cursor customization (size, auto-hide, loop, custom image)
+- ✅ Audio recording (noise gate, level meter, normalization, mixer, export mixer)
+- ✅ Aspect-ratio modes (16:9 ↔ 9:16, social presets, relative-keyframe recalc)
+- ✅ Webcam PiP overlay (FfmpegWebcamCapture + ComposeWithWebcam)
+- ✅ Visual customization (backgrounds, padding, shadows, borders)
+- ✅ Motion blur (cursor trail based on velocity)
+- ✅ Keyboard shortcut display (KeyboardHook + DrawKeycap)
+- ✅ GIF/WebM export + social presets
+- ✅ Crop region, speed ramp, transcript generation contract, hide-desktop-icons
 
-**Deliverable:** App can record screen and log cursor events
+### Phase 7: UI (010–015)
+- ✅ WinUI App scaffold (WindowsAppSDK 2.3.1, builds without VS)
+- ✅ RecordingOverlay (floating chrome, tray, transport controls)
+- ✅ PostRecordWindow (live preview + ExportSheet)
+- ✅ StylePanel (cursor/smoothing/zoom/background/effects tabs)
+- ✅ TimelinePanel (Canvas-based keyframe editor)
+- ✅ SettingsWindow (persistence, device enumeration)
 
----
+### Phase 8: Testing & Polish (021–022)
+- ✅ Tray context menu + window enumeration wiring
+- ✅ Runtime smoke test (launch crash fixed: XAML root/theme-resource/null-VM)
+- ✅ E2E integration tests (15 cases: full pipeline → real MP4)
+- ✅ Performance profiling (7 tests: 30s 720p=16s, 2min 720p=47s)
+- ✅ PRD-based user-feature tests (20 cases: U01–U20)
+- ✅ Packaging (publish.cmd → self-contained 85MB zip)
 
-## Phase 2: Cursor Smoothing (Week 4)
-**Goal:** Transform raw cursor motion into smooth paths
+## Future Work (deferred)
 
-### Tasks
-1. **Smoothing Algorithm**
-   - Catmull-Rom spline interpolation
-   - Configurable tension parameter
-   - Preserve click event accuracy
-
-2. **Smoothing UI**
-   - Intensity slider (None → Heavy)
-   - Real-time preview toggle
-
-**Deliverable:** Cursor movement is smooth and natural. Clicks remain precise.
-
----
-
-## Phase 3: Auto-Zoom (Weeks 5-6)
-**Goal:** Detect interesting moments and apply automatic zooms
-
-### Tasks
-1. **Zoom Detection Algorithm**
-   - Velocity-based action detection
-   - Dwell/pause detection
-   - Click-and-drag detection
-
-2. **Zoom Animation System**
-   - Smooth pan/zoom transitions (ease-in-out)
-   - Keyframe storage and editing
-   - Timeline visualization
-
-3. **Zoom Editing UI**
-   - Timeline with zoom keyframes
-   - Drag to adjust position/timing
-   - Manual zoom tool
-
-**Deliverable:** Automatic zooms on cursor actions. User can edit them.
-
----
-
-## Phase 4: Timeline Editor (Weeks 7-8)
-**Goal:** Visual editing interface for recordings
-
-### Tasks
-1. **Timeline Component**
-   - Visual timeline with time ruler
-   - Video track with thumbnails
-   - Cursor path visualization
-   - Zoom keyframe track
-
-2. **Editing Tools**
-   - Trim/cut operations
-   - Selection tools
-   - Playhead with scrubbing
-   - Undo/redo
-
-3. **Preview Window**
-   - Real-time preview of edits
-   - Before/after comparison
-   - Full-screen preview
-
-**Deliverable:** User can trim recordings and edit zooms visually.
-
----
-
-## Phase 5: Export Engine (Weeks 9-10)
-**Goal:** Produce polished MP4 output
-
-### Tasks
-1. **Rendering Pipeline**
-   - Compose final frames (video + smoothed cursor + zoom transforms)
-   - Per-frame effect application
-   - Hardware acceleration (VideoToolbox)
-
-2. **Encoding & Export**
-   - H.264 encoding with AVFoundation
-   - Resolution options (1080p, 4K)
-   - Quality/bitrate controls
-   - Progress indicator
-
-3. **Export Settings UI**
-   - Resolution selector
-   - Quality preset (Low/Med/High)
-   - Export destination picker
-
-**Deliverable:** Export produces polished MP4 files.
-
----
-
-## Phase 6: MVP Polish (Week 11)
-**Goal:** Production-ready MVP release
-
-### Tasks
-1. **Performance Optimization**
-   - Profile and optimize bottlenecks
-   - Memory management for long recordings
-   - Background processing
-
-2. **User Experience Refinement**
-   - Keyboard shortcuts
-   - Onboarding/tutorial
-   - Error handling
-
-3. **Testing & QA**
-   - Test on various macOS versions
-   - Performance benchmarks
-   - User acceptance testing
-
-**Deliverable:** MVP ready for beta testing.
-
----
-
-## Phase 7+: Post-MVP Features
-**Prioritized by user feedback**
-
-### P1 Features
-- Cursor customization (size, auto-hide, loop position)
-- Audio recording (mic + system audio)
-- Aspect ratio modes (horizontal/vertical)
-- Visual customization (backgrounds, shadows)
-
-### P2 Features
-- Motion blur
-- Keyboard shortcut display
-- iOS device recording
-- Advanced export (GIF, presets)
-- Sharing features
-- Transcript generation
-
----
-
-## Timeline Summary
-
-| Phase | Duration | Key Deliverable |
-|-------|----------|-----------------|
-| 0: Foundation | 1 week | Tech decision, project setup |
-| 1: Recording | 2 weeks | Screen + cursor capture |
-| 2: Smoothing | 1 week | Smooth cursor motion |
-| 3: Auto-Zoom | 2 weeks | Automatic zooms + editing |
-| 4: Timeline | 2 weeks | Visual editing interface |
-| 5: Export | 2 weeks | MP4 export pipeline |
-| 6: Polish | 1 week | Production-ready MVP |
-| **Total to MVP** | **11 weeks** | **Beta-ready MVP** |
-
----
-
-## Risk Mitigation
-
-| Risk | Mitigation |
-|------|------------|
-| Smoothing feels unnatural | Early user testing, tunable parameters |
-| Auto-zoom detection inaccurate | Manual override, heuristic tuning |
-| Export too slow | Hardware acceleration, background rendering |
-| Memory issues with long recordings | Circular buffer, streaming to disk |
-| Performance on older Macs | Minimum system requirements, quality presets |
+| Item | Priority | Notes |
+|------|----------|-------|
+| Live record→export through GUI | High | Needs human at keyboard |
+| MSIX installer + code signing | Medium | Needs cert + admin |
+| iOS device recording (USB) | Low | Niche; complex AVFoundation bridge |
+| Whisper.net speech-to-text | Medium | Contract built; needs model integration |
+| Share/collaboration (cloud) | Low | Different product (Loom/Tella territory) |

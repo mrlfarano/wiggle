@@ -34,7 +34,7 @@ public sealed class MediaFoundationEncoder : IVideoEncoder
             try
             {
                 var iid = typeof(IMFAttributes).GUID;
-                hr = Marshal.QueryInterface(pUnk, ref iid, out IntPtr pItf);
+                hr = Marshal.QueryInterface(pUnk, in iid, out IntPtr pItf);
                 if (pItf != IntPtr.Zero) Marshal.Release(pItf);
                 _available = hr >= 0;
             }

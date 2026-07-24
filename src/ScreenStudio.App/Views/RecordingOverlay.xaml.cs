@@ -12,7 +12,7 @@ namespace ScreenStudio.App.Views;
 /// (Loom's "recorder stays out of the way" model, research §2.7).</summary>
 public sealed partial class RecordingOverlay : UserControl
 {
-    public RecordingViewModel ViewModel { get; private set; }
+    public RecordingViewModel ViewModel { get; private set; } = null!;
 
     /// <summary>Used by the XAML loader. The ViewModel is wired later via
     /// <see cref="InitializeOverlay"/> (the host constructs this control in code-behind with the
