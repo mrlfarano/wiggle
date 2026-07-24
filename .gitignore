@@ -32,11 +32,23 @@ Thumbs.db
 # === XAML compiler temp ===
 *.xbf
 
-# === Imperial Commander runtime state (regenerable) ===
-.imperial-commander/runtime-state.json
-
-# === Playwright / test artifacts ===
+# === Internal tooling (not needed by users) ===
+.agents/
+.claude/
+.impeccable/
 .playwright-mcp/
+.zcode/
+scripts/
+
+# === Imperial Commander task state (regenerable) ===
+.imperial-commander/runtime-state.json
+.imperial-commander/tasks/
+
+# === Old artifacts ===
+task-board.html
+ScreenStudio-win-x64.zip
+
+# === Test results ===
 TestResults/
 
 # === OS temp ===

@@ -5,7 +5,7 @@
 param([string]$InstallDir = "$env:LOCALAPPDATA\ScreenStudio")
 
 $ErrorActionPreference = "SilentlyContinue"
-$AppName = "Screen Studio"
+$AppName = "Wiggle"
 
 Write-Host "Uninstalling $AppName..." -ForegroundColor Cyan
 

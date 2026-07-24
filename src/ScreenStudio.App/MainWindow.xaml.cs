@@ -21,7 +21,7 @@ public sealed partial class MainWindow : Microsoft.UI.Xaml.Window
     {
         InitializeComponent();
         RecordingVm = recordingVm;
-        Title = "Screen Studio";
+        Title = "Wiggle";
 
         // Construct the overlay in code with its VM (so x:Bind has a live root), then host it.
         _overlay = new RecordingOverlay(recordingVm);

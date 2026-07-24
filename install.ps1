@@ -9,7 +9,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$AppName = "Screen Studio"
+$AppName = "Wiggle"
 $ExeName = "ScreenStudio.App.exe"
 
 # Detect the script's directory (where the app files should be).

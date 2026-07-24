@@ -40,7 +40,7 @@ public sealed class TrayController : IDisposable
                 uID = 1,
                 uFlags = NIF_MESSAGE | NIF_TIP,
                 uCallbackMessage = WM_APP_TRAY,
-                szTip = "Screen Studio",
+                szTip = "Wiggle",
             };
             return Shell_NotifyIcon(NIM_ADD, ref data);
         }
