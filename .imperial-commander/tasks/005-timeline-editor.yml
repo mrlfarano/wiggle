@@ -1,0 +1,29 @@
+id: "005"
+title: "Build Timeline Editor UI"
+description: |
+  Create visual timeline interface for editing recordings.
+
+  Requirements:
+  - Visual representation of recording with cursor path
+  - Zoom keyframe visualization and manipulation
+  - Trim/cut functionality
+  - Drag to adjust zoom points in time and space
+  - Playhead with scrubbing
+
+  UI Components:
+  - Timeline canvas with time ruler
+  - Track for video frames
+  - Track for zoom keyframes
+  - Selection tools (trim, cut)
+  - Playback controls
+
+  Deliverables:
+  - Timeline component
+  - Zoom keyframe editor
+  - Trim/cut operations
+  - Time-based navigation
+priority: high
+status: done
+complexity: medium
+tags: [ui, editor, timeline]
+dependencies: ["002", "004"]

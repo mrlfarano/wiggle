@@ -1,0 +1,49 @@
+{
+  "project": {
+    "name": "screenstudio-clone",
+    "description": "Screen Studio clone - professional screen recorder for Windows 11 with automatic zoom, cursor smoothing, and polished effects",
+    "version": "0.1.0",
+    "author": ""
+  },
+  "models": {
+    "main": {
+      "provider": "openai-compatible",
+      "modelId": "gpt-4o-mini",
+      "maxTokens": 32768,
+      "temperature": 0.2,
+      "baseURL": "https://api.z.ai/api/coding/paas/v4"
+    },
+    "research": {
+      "provider": "anthropic",
+      "modelId": "claude-sonnet-4-20250514",
+      "maxTokens": 32768,
+      "temperature": 0.1,
+      "baseURL": "https://api.z.ai/api/coding/paas/v4"
+    },
+    "fallback": {
+      "provider": "anthropic",
+      "modelId": "claude-haiku-4-20250514",
+      "maxTokens": 32768,
+      "temperature": 0.2,
+      "baseURL": "https://api.z.ai/api/coding/paas/v4"
+    }
+  },
+  "global": {
+    "responseLanguage": "English",
+    "logLevel": "info",
+    "telemetryEnabled": true
+  },
+  "storage": {
+    "type": "file",
+    "operatingMode": "solo"
+  },
+  "providers": {
+    "anthropic": {
+      "baseURL": "https://api.z.ai/api/coding/paas/v4"
+    }
+  },
+  "featureFlags": {
+    "enableCodebaseAnalysis": true,
+    "enableProxy": false
+  }
+}

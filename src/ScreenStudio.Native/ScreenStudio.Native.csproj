@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Native integration layer for Windows 11 media APIs.
+
+    Targets net10.0-windows10.0.19041.0. The TargetFramework-conditional
+    WindowsPlatformPackageReference auto-pulls Microsoft.Windows.SDK.NET.Ref, which
+    provides the CsWinRT projection for:
+      - Windows.Graphics.Capture (WGC)            -> task 002 screen capture
+      - Windows.Media.Capture / MediaFoundation     -> task 006 H.264 encode
+      - Windows.Media.Audio / WASAPI                -> task 008 audio capture
+    We deliberately do NOT reference Microsoft.WindowsAppSDK: its PRI-generation
+    targets require Visual Studio's Appx tooling, which is absent from a pure
+    `dotnet` SDK install. The WinRT APIs we need are in the base SDK projection.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>ScreenStudio.Native</RootNamespace>
+    <UseRidAsHost>false</UseRidAsHost>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ScreenStudio.Core\ScreenStudio.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="ScreenStudio.Native.Tests" />
+  </ItemGroup>
+
+</Project>

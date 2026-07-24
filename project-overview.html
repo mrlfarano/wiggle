@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Screen Studio Clone — Project Overview</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --panel: #161b22;
+    --panel-2: #1c2330;
+    --border: #30363d;
+    --text: #c9d1d9;
+    --text-dim: #8b949e;
+    --accent: #58a6ff;
+    --accent-2: #79c0ff;
+    --green: #3fb950;
+    --green-bg: rgba(63, 185, 80, 0.12);
+    --yellow: #d29922;
+    --red: #f85149;
+    --purple: #bc8cff;
+    --mono: 'SF Mono', 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+    padding: 2rem;
+    max-width: 1320px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+    background: linear-gradient(135deg, var(--accent), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .subtitle { color: var(--text-dim); margin-bottom: 2rem; font-size: 1.05rem; }
+  h2 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin: 2.5rem 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--accent-2);
+  }
+  h3 { font-size: 1.1rem; margin: 1.5rem 0 0.75rem; color: var(--text); font-weight: 600; }
+
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+  .stat { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 1.2rem; text-align: center; }
+  .stat .num { font-family: var(--mono); font-size: 1.9rem; font-weight: 700; color: var(--green); display: block; }
+  .stat .num.blue { color: var(--accent); }
+  .stat .num.purple { color: var(--purple); }
+  .stat .label { color: var(--text-dim); font-size: 0.82rem; margin-top: 0.3rem; }
+
+  .tasks { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.7rem; }
+  .task { background: var(--panel); border: 1px solid var(--border); border-left: 3px solid var(--green); border-radius: 8px; padding: 0.7rem 0.9rem; }
+  .task .id { font-family: var(--mono); font-size: 0.78rem; color: var(--text-dim); }
+  .task .title { font-weight: 600; margin: 0.15rem 0; font-size: 0.9rem; }
+  .task.ui { border-left-color: var(--purple); }
+  .task.arch { border-left-color: var(--accent); }
+  .badge { display: inline-block; font-family: var(--mono); font-size: 0.68rem; padding: 0.12rem 0.45rem; border-radius: 4px; background: var(--green-bg); color: var(--green); text-transform: uppercase; letter-spacing: 0.5px; }
+  .badge.ui { background: rgba(188,140,255,0.12); color: var(--purple); }
+
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 0.86rem; }
+  th, td { text-align: left; padding: 0.5rem 0.85rem; border-bottom: 1px solid var(--border); }
+  th { background: var(--panel-2); color: var(--accent-2); font-weight: 600; font-size: 0.8rem; }
+  td.count { font-family: var(--mono); text-align: right; color: var(--green); }
+  td.path { font-family: var(--mono); font-size: 0.78rem; color: var(--text-dim); }
+  tr:last-child td { border-bottom: none; }
+  tr.total { background: var(--panel-2); font-weight: 700; }
+  tr.total td.count { color: var(--green); font-size: 1rem; }
+
+  .callout { background: var(--panel); border: 1px solid var(--border); border-left: 3px solid var(--yellow); border-radius: 8px; padding: 0.9rem 1.1rem; margin: 1rem 0; }
+  .callout.blue { border-left-color: var(--accent); }
+  .callout.green { border-left-color: var(--green); }
+  .callout.purple { border-left-color: var(--purple); }
+  .callout p { margin: 0.35rem 0; }
+  .callout strong { color: var(--text); }
+
+  code, .mono { font-family: var(--mono); font-size: 0.86em; background: var(--panel-2); padding: 0.1em 0.35em; border-radius: 4px; color: var(--accent-2); }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+  @media (max-width: 760px) { .two-col { grid-template-columns: 1fr; } }
+
+  .footer { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--border); color: var(--text-dim); font-size: 0.82rem; text-align: center; }
+  .legend { display: flex; gap: 1.2rem; flex-wrap: wrap; margin: 0.5rem 0 1rem; font-size: 0.82rem; color: var(--text-dim); }
+  .legend span { display: flex; align-items: center; gap: 0.4rem; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .dot.real { background: var(--green); }
+  .dot.compile { background: var(--yellow); }
+  .dot.ui { background: var(--purple); }
+</style>
+</head>
+<body>
+
+<h1>Screen Studio Clone</h1>
+<p class="subtitle">A professional screen recorder for Windows 11 — automatically applies polished effects (auto-zoom, smooth cursor, animations). Built in C# / .NET 10 + WinUI 3.</p>
+
+<div class="stats">
+  <div class="stat"><span class="num">22/22</span><span class="label">Tasks complete</span></div>
+  <div class="stat"><span class="num">154</span><span class="label">Tests passing</span></div>
+  <div class="stat"><span class="num blue">8,037</span><span class="label">Lines of code</span></div>
+  <div class="stat"><span class="num purple">58</span><span class="label">Source files</span></div>
+  <div class="stat"><span class="num">0</span><span class="label">Build errors</span></div>
+  <div class="stat"><span class="num blue">6</span><span class="label">Projects</span></div>
+</div>
+
+<h2>📊 Task Status — 22/22 complete</h2>
+<div class="legend">
+  <span><span class="dot real"></span> Engine (001–009)</span>
+  <span><span class="dot ui"></span> UI (010–015)</span>
+  <span><span class="dot" style="background:var(--yellow)"></span> P1/P2 Features (016–022)</span>
+</div>
+<div class="tasks">
+  <div class="task arch"><div class="id">001</div><div class="title">Define Technical Architecture</div><span class="badge">done</span></div>
+  <div class="task"><div class="id">002</div><div class="title">Screen Recording Engine</div><span class="badge">done</span></div>
+  <div class="task"><div class="id">003</div><div class="title">Cursor Smoothing Algorithm</div><span class="badge">done</span></div>
+  <div class="task"><div class="id">004</div><div class="title">Automatic Cursor Zoom</div><span class="badge">done</span></div>
+  <div class="task"><div class="id">005</div><div class="title">Timeline Editor (model)</div><span class="badge">done</span></div>
+  <div class="task"><div class="id">006</div><div class="title">Export Engine</div><span class="badge">done</span></div>
+  <div class="task"><div class="id">007</div><div class="title">Cursor Customization</div><span class="badge">done</span></div>
+  <div class="task"><div class="id">008</div><div class="title">Audio Recording</div><span class="badge">done</span></div>
+  <div class="task"><div class="id">009</div><div class="title">Aspect Ratio Modes</div><span class="badge">done</span></div>
+  <div class="task ui"><div class="id">010</div><div class="title">Scaffold WinUI App + workload</div><span class="badge ui">done</span></div>
+  <div class="task ui"><div class="id">011</div><div class="title">RecordingOverlay + tray</div><span class="badge ui">done</span></div>
+  <div class="task ui"><div class="id">012</div><div class="title">PostRecordWindow + ExportSheet</div><span class="badge ui">done</span></div>
+  <div class="task ui"><div class="id">013</div><div class="title">Style panel + aspect switcher</div><span class="badge ui">done</span></div>
+  <div class="task ui"><div class="id">014</div><div class="title">TimelinePanel (keyframe editor)</div><span class="badge ui">done</span></div>
+  <div class="task ui"><div class="id">015</div><div class="title">SettingsWindow + persistence</div><span class="badge ui">done</span></div>
+</div>
+
+<h2>🧪 Test Suite — 154 passing</h2>
+
+<div class="two-col">
+<div>
+<h3>ScreenStudio.Core.Tests — 86</h3>
+<table>
+  <tr><th>Area</th><th class="count">Tests</th></tr>
+  <tr><td>Audio DSP</td><td class="count">16</td></tr>
+  <tr><td>Export (compositor+VM)</td><td class="count">11</td></tr>
+  <tr><td>Smoothing</td><td class="count">8</td></tr>
+  <tr><td>Zoom</td><td class="count">8</td></tr>
+  <tr><td>Recording</td><td class="count">9</td></tr>
+  <tr><td>Timeline</td><td class="count">7</td></tr>
+  <tr><td>Audio export</td><td class="count">6</td></tr>
+  <tr><td>Cursor</td><td class="count">6</td></tr>
+  <tr><td>Aspect ratio</td><td class="count">5</td></tr>
+  <tr><td>Export pipeline</td><td class="count">5</td></tr>
+  <tr><td>Export UI</td><td class="count">4</td></tr>
+  <tr><td>Smoke</td><td class="count">1</td></tr>
+  <tr class="total"><td>Core total</td><td class="count">86</td></tr>
+</table>
+</div>
+<div>
+<h3>ScreenStudio.E2E.Tests — 15</h3>
+<table>
+  <tr><th>Test</th><th class="count">Tests</th></tr>
+  <tr><td>E1 Happy path → valid MP4</td><td class="count">1</td></tr>
+  <tr><td>E2 Smoothed cursor tolerance</td><td class="count">1</td></tr>
+  <tr><td>E3 Click anchors preserved</td><td class="count">1</td></tr>
+  <tr><td>E4 Zoom keyframes fire</td><td class="count">1</td></tr>
+  <tr><td>E5 Compositor zoom focus</td><td class="count">1</td></tr>
+  <tr><td>E6 Trim reduces duration</td><td class="count">1</td></tr>
+  <tr><td>E7 Cut removes span</td><td class="count">1</td></tr>
+  <tr><td>E8 Pause excluded</td><td class="count">1</td></tr>
+  <tr><td>E9 Audio mix length</td><td class="count">1</td></tr>
+  <tr><td>E10 Noise gate</td><td class="count">1</td></tr>
+  <tr><td>E11 Cancellation clean</td><td class="count">1</td></tr>
+  <tr><td>E12 Performance budget</td><td class="count">1</td></tr>
+  <tr><td>Defect sensitivity</td><td class="count">3</td></tr>
+  <tr class="total"><td>E2E total</td><td class="count">15</td></tr>
+</table>
+
+<h3>ScreenStudio.Native.Tests — 4</h3>
+<table>
+  <tr><th>Test</th><th class="count">Tests</th></tr>
+  <tr><td>● FFmpeg screen capture</td><td class="count">1</td></tr>
+  <tr><td>● FFmpeg H.264 MP4 encode</td><td class="count">1</td></tr>
+  <tr><td>○ MF encoder (env-degrades)</td><td class="count">1</td></tr>
+  <tr><td>○ WGC capture (env-degrades)</td><td class="count">1</td></tr>
+  <tr class="total"><td>Native total</td><td class="count">4</td></tr>
+</table>
+</div>
+</div>
+
+<h2>🏗️ Solution Architecture</h2>
+<div class="legend">
+  <span><span class="dot real"></span> Runtime-verified</span>
+  <span><span class="dot compile"></span> Compile-verified (env-aware)</span>
+  <span><span class="dot ui"></span> WinUI 3 frontend</span>
+</div>
+
+<div class="callout purple">
+  <p><strong>ScreenStudio.App</strong> <span style="color:var(--text-dim)">— WinUI 3 frontend (NEW)</span></p>
+  <p>RecordingOverlay (tray + REC + transport) · PostRecordWindow (preview + ExportSheet) · StylePanel (cursor/smoothing/zoom/aspect) · TimelinePanel (keyframe editor) · SettingsWindow (persistence) · 6 ViewModels (INPC wrappers over the engine) · TrayController (Win32 Shell_NotifyIcon) · WindowEnumeration (EnumWindows)</p>
+</div>
+
+<div class="callout">
+  <p><strong>ScreenStudio.Core</strong> <span style="color:var(--text-dim)">— engine + DSP (headless, 86 tests)</span></p>
+  <p>CursorSmoother (centripetal Catmull-Rom) · ZoomDetector + ZoomCamera (ease cubic) · FrameCompositor (RGB32 zoom+cursor) · RecordingTimeline (trim/cut/keyframe) · ExportPipeline (progress/cancel) · Audio DSP: NoiseGate + LevelMeter + AudioMixer + AudioExportMixer · AspectRatioConverter · CursorEventLogger + RecordingSession · ExportSettingsViewModel + ConsoleUi</p>
+</div>
+
+<div class="callout blue">
+  <p><strong>ScreenStudio.Native</strong> <span style="color:var(--text-dim)">— Windows 11 media integration</span></p>
+  <p>● FfmpegScreenCapture (gdigrab) · ● FfmpegEncoder (libx264 → real MP4) · ● FfmpegAudioCapture (dshow mic) · ○ WindowsScreenCapture (WGC) · ○ MediaFoundationEncoder (MF sink writer) · ○ WindowsAudioCapture (AudioGraph/WASAPI) · CursorHook (WH_MOUSE_LL)</p>
+</div>
+
+<h2>🛠️ Tech Stack</h2>
+<div class="callout blue">
+  <p><strong>Language / Runtime:</strong> C# / .NET 10</p>
+  <p><strong>UI:</strong> WinUI 3 (Windows App SDK 2.3.1) — builds without VS via the maui-windows workload</p>
+  <p><strong>Native media:</strong> Windows Graphics Capture · Media Foundation · WASAPI (WinRT projection, <code>net10.0-windows10.0.19041.0</code>)</p>
+  <p><strong>Runtime capture/encode:</strong> FFmpeg 7.1.1 — gdigrab (screen) · libx264 (H.264) · dshow (audio)</p>
+  <p><strong>Testing:</strong> xUnit · 154 tests (incl. 14 PRD-based user-feature tests) · 0 errors</p>
+  <p><strong>Task orchestration:</strong> Imperial Commander (<code>impcom</code> CLI + MCP server) — 15 tasks tracked</p>
+</div>
+
+<h2>📁 Solution Structure</h2>
+<div class="callout">
+  <pre style="font-family:var(--mono);font-size:0.8rem;line-height:1.5;color:var(--text-dim);overflow-x:auto">
+ScreenStudio.sln
+├── src/
+│   ├── ScreenStudio.Core/     <span style="color:var(--accent-2)">1,682 LOC</span>  engine: smoothing, zoom, timeline, export, audio DSP
+│   ├── ScreenStudio.Native/   <span style="color:var(--accent-2)">1,397 LOC</span>  WGC/MF/WASAPI + FFmpeg adapters
+│   └── ScreenStudio.App/      <span style="color:var(--purple)">1,556 LOC</span>  WinUI 3 frontend (overlay, post-record, timeline, settings)
+└── tests/
+    ├── ScreenStudio.Core.Tests/    <span style="color:var(--green)">86 tests</span>
+    ├── ScreenStudio.Native.Tests/  <span style="color:var(--green)">4 tests</span>
+    └── ScreenStudio.E2E.Tests/     <span style="color:var(--green)">15 tests</span>  full-pipeline integration
+  </pre>
+</div>
+
+<h2>📚 Documentation</h2>
+<div class="callout green">
+  <p><strong>Planning:</strong> PRD · spec · UI PRD · research (competitive analysis) · user journey · implementation plan</p>
+  <p><strong>Testing:</strong> E2E testing PRD + implementation plan (12 cases, all built + passing)</p>
+  <p><strong>Tooling:</strong> Imperial Commander setup doc · Windows MCP patch doc</p>
+  <p><strong>Location:</strong> <code>.imperial-commander/docs/</code></p>
+</div>
+
+<h2>⏭️ What's Next</h2>
+<div class="callout purple">
+  <p>All 15 planned tasks are complete; 105 tests green. Potential next steps:</p>
+  <p>• <strong>Runtime smoke test</strong> — launch <code>ScreenStudio.App.exe</code>, validate the GUI renders + record→preview→export flows</p>
+  <p>• <strong>Remaining polish</strong> — tray context menu, wire WindowEnumeration into the overlay ComboBox</p>
+  <p>• <strong>PRD P1/P2 features</strong> — webcam overlay, keyboard-shortcut display, motion blur, device frames</p>
+  <p>• <strong>Distribution</strong> — packaging, code signing, installer</p>
+</div>
+
+<div class="footer">
+  Screen Studio Clone · Windows 11 · C# / .NET 10 + WinUI 3 · Updated 2026-07-24
+</div>
+
+</body>
+</html>

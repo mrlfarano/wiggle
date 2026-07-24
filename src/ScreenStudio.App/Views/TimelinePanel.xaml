@@ -1,0 +1,44 @@
+<UserControl
+    x:Class="ScreenStudio.App.Views.TimelinePanel"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Height="160">
+
+    <Border Background="{ThemeResource LayerFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            CornerRadius="8"
+            Padding="12">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header: title + duration + tools -->
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="12" Margin="0,0,0,8">
+                <TextBlock Text="Timeline" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                <TextBlock x:Name="DurationText" Opacity="0.7" VerticalAlignment="Center"/>
+                <Button Content="✂ Cut" Click="OnCutClicked" Padding="8,2"/>
+                <Button Content="✄ Trim" Click="OnTrimClicked" Padding="8,2"/>
+            </StackPanel>
+
+            <!-- The track canvas: time ruler + segments + keyframes + playhead -->
+            <Canvas x:Name="TrackCanvas" Grid.Row="1"
+                    Background="Transparent"
+                    PointerPressed="OnCanvasPointerPressed"
+                    PointerMoved="OnCanvasPointerMoved"
+                    PointerReleased="OnCanvasPointerReleased"/>
+
+            <!-- Footer: playhead time -->
+            <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8" Margin="0,8,0,0">
+                <TextBlock Text="Playhead:" Opacity="0.7"/>
+                <TextBlock x:Name="PlayheadText" FontFamily="Consolas"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

@@ -1,0 +1,42 @@
+id: "001"
+title: "Define Technical Architecture"
+description: |
+  DECISION RECORD — Tech stack & architecture (RESOLVED).
+
+  Chosen stack: C# / .NET 8 + WinUI 3 (native Windows 11).
+  Rationale: first-class access to the Windows media APIs that are essential to
+  this product's core differentiator (polished effects while capturing at 60fps
+  with a responsive UI), lowest runtime overhead, and fully buildable/runnable on
+  the Windows dev machine. macOS/Linux support is out of scope for v1.
+
+  Options evaluated:
+  - C# / .NET + WinUI 3 (CHOSEN) — native WGC/Media Foundation/WASAPI, best perf.
+  - Tauri + React — React UI is great for the timeline, but capture/encode would
+    require bridging to Windows APIs via `windows-rs` (added complexity).
+  - Electron + React — largest ecosystem, but Chromium overhead works against the
+    "responsive during recording" success metric.
+  - Flutter — weakest native-media story on Windows (needs platform channels).
+
+  Windows 11 native API mapping (source of truth for engine tasks):
+  - Screen capture 60fps, low overhead → Windows Graphics Capture (WGC) API,
+    frames delivered as Direct3D 11 textures to a DirectX/Direct2D swap chain.
+  - Hardware video encode → Media Foundation (NVENC / Intel QSV / AMD AMF).
+  - System audio capture → WASAPI loopback on the render endpoint.
+  - Microphone capture → WASAPI capture endpoint (+ Voice Capture DSP for AEC /
+    noise suppression / AGC where needed).
+  - High-precision cursor tracking → WH_MOUSE_LL low-level mouse hook and/or
+    GetCursorInfo polling, timestamped with QueryPerformanceCounter.
+
+  Layered architecture (top → bottom):
+  - UI Layer (WinUI 3): recording UI, timeline editor, preview, export dialog.
+  - Recording Engine: WGC capture, cursor tracker, WASAPI audio.
+  - Processing Pipeline: zoom detection, Catmull-Rom cursor smoothing, effects
+    render (GPU/Direct2D compositing).
+  - Export Engine: Media Foundation encode, MP4 (H.264) mux, format/aspect-ratio
+    options, progress + cancellation.
+
+  Out of scope for v1: macOS, Linux, iOS-device-recording USB capture, cloud sync.
+priority: high
+status: done
+complexity: medium
+tags: [architecture, tech-stack, planning, windows]

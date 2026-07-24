@@ -1,0 +1,128 @@
+tag: "master"
+tasks:
+  - id: "001"
+    title: "Define Technical Architecture"
+    description: "DECISION RECORD — Tech stack & architecture (RESOLVED).\n\nChosen stack: C# / .NET 8 + WinUI 3 (native Windows 11).\nRationale: first-class access to the Windows media APIs that are essential to\nthis product's core differentiator (polished effects while capturing at 60fps\nwith a responsive UI), lowest runtime overhead, and fully buildable/runnable on\nthe Windows dev machine. macOS/Linux support is out of scope for v1.\n\nOptions evaluated:\n- C# / .NET + WinUI 3 (CHOSEN) — native WGC/Media Foundation/WASAPI, best perf.\n- Tauri + React — React UI is great for the timeline, but capture/encode would\n  require bridging to Windows APIs via `windows-rs` (added complexity).\n- Electron + React — largest ecosystem, but Chromium overhead works against the\n  \"responsive during recording\" success metric.\n- Flutter — weakest native-media story on Windows (needs platform channels).\n\nWindows 11 native API mapping (source of truth for engine tasks):\n- Screen capture 60fps, low overhead → Windows Graphics Capture (WGC) API,\n  frames delivered as Direct3D 11 textures to a DirectX/Direct2D swap chain.\n- Hardware video encode → Media Foundation (NVENC / Intel QSV / AMD AMF).\n- System audio capture → WASAPI loopback on the render endpoint.\n- Microphone capture → WASAPI capture endpoint (+ Voice Capture DSP for AEC /\n  noise suppression / AGC where needed).\n- High-precision cursor tracking → WH_MOUSE_LL low-level mouse hook and/or\n  GetCursorInfo polling, timestamped with QueryPerformanceCounter.\n\nLayered architecture (top → bottom):\n- UI Layer (WinUI 3): recording UI, timeline editor, preview, export dialog.\n- Recording Engine: WGC capture, cursor tracker, WASAPI audio.\n- Processing Pipeline: zoom detection, Catmull-Rom cursor smoothing, effects\n  render (GPU/Direct2D compositing).\n- Export Engine: Media Foundation encode, MP4 (H.264) mux, format/aspect-ratio\n  options, progress + cancellation.\n\nOut of scope for v1: macOS, Linux, iOS-device-recording USB capture, cloud sync."
+    details: ""
+    testStrategy: ""
+    status: "done"
+    priority: "high"
+    dependencies: []
+    subtasks: []
+    complexity:
+      score: 7
+      level: "medium"
+      recommendedSubtasks: 0
+      reasoning: "Migrated from legacy per-task YAML (no AI re-assessment)."
+  - id: "002"
+    title: "Implement Screen Recording Engine"
+    description: "Build the core recording functionality:\n- Full screen or selected area recording\n- High-quality capture (60fps target)\n- Low CPU overhead during recording\n- Cursor position and click event tracking (high precision)\n- Raw frame buffer storage for processing\n\nTechnical considerations:\n- Use Windows-native APIs: Windows Graphics Capture (WGC) API for GPU-accelerated screen/monitor/window/region capture at 60fps; render captured frames to a Direct3D 11 texture (DirectX surface) for downstream compositing\n- Track cursor via WH_MOUSE_LL low-level mouse hook (and/or GetCursorInfo + per-frame cursor capture from WGC, which can include the system cursor in the frame) — log position + click events with high-resolution timestamps (QueryPerformanceCounter)\n- Implement efficient frame buffering (pool of D3D11 textures / staging buffers; avoid GPU→CPU readback on the hot path)\n- Log cursor events with timestamps for later processing\n- Consider memory footprint for long recordings (stream to disk / chunked buffers rather than holding all raw frames)\n\nDeliverables:\n- Working screen capture module (WGC-based)\n- Cursor event logger\n- Basic recording controls (start/stop/pause)\n- Raw output verification"
+    details: ""
+    testStrategy: ""
+    status: "done"
+    priority: "high"
+    dependencies: ["001"]
+    subtasks: []
+    complexity:
+      score: 7
+      level: "high"
+      recommendedSubtasks: 0
+      reasoning: "Migrated from legacy per-task YAML (no AI re-assessment)."
+  - id: "003"
+    title: "Implement Cursor Smoothing Algorithm"
+    description: "Transform shaky/jerky cursor motion into smooth curves.\n\nRequirements:\n- Implement Catmull-Rom or similar spline interpolation\n- Configurable smoothing intensity (None, Light, Medium, Heavy)\n- Real-time preview of smoothed path\n- Preserve key events (clicks) at precise locations\n\nTechnical approach:\n- Apply spline interpolation between cursor waypoints\n- Maintain click event accuracy while smoothing movement\n- Implement adjustable tension parameter\n- Generate smoothed cursor frame overlay\n\nDeliverables:\n- Smoothing algorithm module\n- Configurable intensity slider\n- Preview rendering\n- Performance benchmark (should handle 60fps)"
+    details: ""
+    testStrategy: ""
+    status: "done"
+    priority: "high"
+    dependencies: ["002"]
+    subtasks: []
+    complexity:
+      score: 7
+      level: "high"
+      recommendedSubtasks: 0
+      reasoning: "Migrated from legacy per-task YAML (no AI re-assessment)."
+  - id: "004"
+    title: "Implement Automatic Cursor Zoom"
+    description: "Detect cursor actions and automatically zoom the viewport.\n\nRequirements:\n- Detect \"interesting\" cursor actions (clicks, drags, pauses)\n- Calculate appropriate zoom level and pan\n- Smooth zoom transitions (ease-in/out)\n- Timeline-based zoom editing UI\n\nTechnical approach:\n- Analyze cursor velocity and events\n- Apply heuristics to determine zoom-worthy moments\n- Implement smooth camera pan/zoom transforms\n- Store zoom keyframes in timeline\n\nDeliverables:\n- Zoom detection algorithm\n- Smooth zoom animation system\n- Timeline zoom controls\n- Auto vs manual zoom modes"
+    details: ""
+    testStrategy: ""
+    status: "done"
+    priority: "high"
+    dependencies: ["002", "003"]
+    subtasks: []
+    complexity:
+      score: 7
+      level: "high"
+      recommendedSubtasks: 0
+      reasoning: "Migrated from legacy per-task YAML (no AI re-assessment)."
+  - id: "005"
+    title: "Build Timeline Editor UI"
+    description: "Create visual timeline interface for editing recordings.\n\nRequirements:\n- Visual representation of recording with cursor path\n- Zoom keyframe visualization and manipulation\n- Trim/cut functionality\n- Drag to adjust zoom points in time and space\n- Playhead with scrubbing\n\nUI Components:\n- Timeline canvas with time ruler\n- Track for video frames\n- Track for zoom keyframes\n- Selection tools (trim, cut)\n- Playback controls\n\nDeliverables:\n- Timeline component\n- Zoom keyframe editor\n- Trim/cut operations\n- Time-based navigation"
+    details: ""
+    testStrategy: ""
+    status: "done"
+    priority: "high"
+    dependencies: ["002", "004"]
+    subtasks: []
+    complexity:
+      score: 7
+      level: "medium"
+      recommendedSubtasks: 0
+      reasoning: "Migrated from legacy per-task YAML (no AI re-assessment)."
+  - id: "006"
+    title: "Implement Export Engine"
+    description: "Build video export functionality with proper encoding.\n\nRequirements:\n- Export as MP4 (H.264 codec)\n- Resolution options (1080p, 4K)\n- Frame rate options (30fps, 60fps)\n- Quality/bitrate controls\n- Progress indicator during export\n\nTechnical approach:\n- Compose final frames from recording + effects\n- Apply zoom transforms per frame\n- Render smoothed cursor overlay\n- Encode with hardware acceleration when available\n- Implement cancellation support\n\nDeliverables:\n- Export pipeline\n- H.264 encoding integration\n- Export settings UI\n- Progress tracking\n- Export quality validation"
+    details: ""
+    testStrategy: ""
+    status: "done"
+    priority: "high"
+    dependencies: ["003", "004", "005"]
+    subtasks: []
+    complexity:
+      score: 7
+      level: "high"
+      recommendedSubtasks: 0
+      reasoning: "Migrated from legacy per-task YAML (no AI re-assessment)."
+  - id: "007"
+    title: "Add Cursor Customization Features"
+    description: "Implement cursor appearance and behavior controls.\n\nFeatures:\n- Adjust cursor size (slider or presets)\n- High-resolution cursor replacement when size increased\n- Auto-hide static cursor after configurable timeout\n- Loop cursor position for seamless looping videos\n- Custom cursor image support\n\nTechnical approach:\n- Cache high-res cursor variants\n- Implement fade-out animation for auto-hide\n- Calculate return path for loop position\n\nDeliverables:\n- Cursor customization panel\n- Size slider with presets\n- Auto-hide toggle and timeout\n- Loop position option"
+    details: ""
+    testStrategy: ""
+    status: "done"
+    priority: "medium"
+    dependencies: ["003"]
+    subtasks: []
+    complexity:
+      score: 5
+      level: "medium"
+      recommendedSubtasks: 0
+      reasoning: "Migrated from legacy per-task YAML (no AI re-assessment)."
+  - id: "008"
+    title: "Implement Audio Recording"
+    description: "Add microphone and system audio capture.\n\nFeatures:\n- Microphone recording\n- System audio capture (all apps or selected)\n- Background noise reduction\n- Audio normalization\n- Volume level meters\n- Separate audio track control\n\nTechnical approach:\n- Use WASAPI for capture: microphone via the default input endpoint, system audio via WASAPI loopback on the render endpoint (Windows 10+ supports loopback capture cleanly; per-process capture needs an audio-graph/IAudioCaptureClient approach or process injection and is harder)\n- Implement noise gate filter and (optional) AEC/voice processing via Media Foundation Voice Capture DSP (MFPKEY_WMAAFCMA_FORMAT; the Voice Capture DSP provides acoustic-echo cancellation, noise suppression, AGC)\n- Apply compression/normalization (DSP / manual)\n- Sync audio with video timeline using shared high-resolution timestamps\n\nDeliverables:\n- Audio capture module\n- Noise reduction filter\n- Audio level meters\n- Export with mixed audio"
+    details: ""
+    testStrategy: ""
+    status: "done"
+    priority: "medium"
+    dependencies: ["002"]
+    subtasks: []
+    complexity:
+      score: 5
+      level: "medium"
+      recommendedSubtasks: 0
+      reasoning: "Migrated from legacy per-task YAML (no AI re-assessment)."
+  - id: "009"
+    title: "Implement Aspect Ratio Modes"
+    description: "Support horizontal and vertical output modes.\n\nFeatures:\n- Horizontal mode (16:9 landscape)\n- Vertical mode (9:16 portrait for social media)\n- One-click mode switching\n- Auto-adjust all zooms when switching modes\n- Social media presets (TikTok, IG Reels, YouTube Shorts)\n\nTechnical approach:\n- Store zoom keyframes as relative positions\n- Recalculate transforms on aspect ratio change\n- Maintain content focus area\n- Add padding/cropping as needed\n\nDeliverables:\n- Aspect ratio selector\n- Auto-zoom recalculation\n- Preview in both modes\n- Social media presets"
+    details: ""
+    testStrategy: ""
+    status: "done"
+    priority: "medium"
+    dependencies: ["004", "005"]
+    subtasks: []
+    complexity:
+      score: 5
+      level: "medium"
+      recommendedSubtasks: 0
+      reasoning: "Migrated from legacy per-task YAML (no AI re-assessment)."

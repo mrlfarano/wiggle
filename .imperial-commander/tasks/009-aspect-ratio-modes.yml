@@ -1,0 +1,28 @@
+id: "009"
+title: "Implement Aspect Ratio Modes"
+description: |
+  Support horizontal and vertical output modes.
+
+  Features:
+  - Horizontal mode (16:9 landscape)
+  - Vertical mode (9:16 portrait for social media)
+  - One-click mode switching
+  - Auto-adjust all zooms when switching modes
+  - Social media presets (TikTok, IG Reels, YouTube Shorts)
+
+  Technical approach:
+  - Store zoom keyframes as relative positions
+  - Recalculate transforms on aspect ratio change
+  - Maintain content focus area
+  - Add padding/cropping as needed
+
+  Deliverables:
+  - Aspect ratio selector
+  - Auto-zoom recalculation
+  - Preview in both modes
+  - Social media presets
+priority: medium
+status: done
+complexity: medium
+tags: [ui, export, social-media]
+dependencies: ["004", "005"]

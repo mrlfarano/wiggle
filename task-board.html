@@ -1,0 +1,2241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screen Studio Clone - Task Board</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .header .stats {
+            font-size: 14px;
+            color: #888;
+        }
+        .phase-legend {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .phase-badge {
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+        .phase-badge:hover {
+            opacity: 0.8;
+        }
+        .phase-badge.active {
+            border-color: #fff;
+            box-shadow: 0 0 10px rgba(255,255,255,0.3);
+        }
+        .phase-badge.show-all {
+            background: #4ade80;
+            cursor: pointer;
+        }
+        .phase-0 { background: #3b82f6; }
+        .phase-1 { background: #10b981; }
+        .phase-5 { background: #f59e0b; }
+        .phase-2 { background: #8b5cf6; }
+        .phase-3 { background: #ec4899; }
+        .phase-4 { background: #f97316; }
+        .phase-6 { background: #6b7280; }
+        .kanban {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .column {
+            background: #2d2d2d;
+            border-radius: 8px;
+            padding: 15px;
+            min-height: 400px;
+        }
+        .column-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #404040;
+        }
+        .column-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .column-count {
+            background: #404040;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+        .task-card {
+            background: #363636;
+            border: 1px solid #444;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: grab;
+            transition: all 0.2s;
+        }
+        .task-card:hover {
+            border-color: #555;
+            transform: translateY(-1px);
+        }
+        .task-card:active {
+            cursor: grabbing;
+        }
+        .task-card.dragging {
+            opacity: 0.5;
+        }
+        .task-card .phase-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        .task-card .task-id {
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+        .task-card .task-title {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            line-height: 1.4;
+        }
+        .task-card .task-desc {
+            font-size: 12px;
+            color: #a0a0a0;
+            line-height: 1.4;
+            margin-bottom: 8px;
+        }
+        .task-card .meta {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            font-size: 11px;
+        }
+        .meta-item {
+            padding: 2px 8px;
+            background: #404040;
+            border-radius: 4px;
+        }
+        .blocked-by {
+            color: #f87171;
+        }
+        .priority-p0 { color: #f87171; }
+        .priority-p1 { color: #fb923c; }
+        .priority-p2 { color: #fbbf24; }
+        .complexity-low { color: #4ade80; }
+        .complexity-medium { color: #fbbf24; }
+        .complexity-high { color: #f87171; }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 12px;
+            color: #666;
+        }
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal {
+            background: #2d2d2d;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #404040;
+        }
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-close:hover {
+            color: #fff;
+        }
+        .modal-body {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .modal-row {
+            display: flex;
+            margin-bottom: 12px;
+        }
+        .modal-label {
+            font-weight: 500;
+            color: #888;
+            min-width: 100px;
+        }
+        .modal-value {
+            color: #e0e0e0;
+        }
+        .modal-header-complexity {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: auto;
+        }
+        .complexity-badge-low { background: #4ade80; color: #000; }
+        .complexity-badge-medium { background: #fbbf24; color: #000; }
+        .complexity-badge-high { background: #f87171; color: #000; }
+        .modal-desc {
+            margin: 16px 0;
+            padding: 12px;
+            background: #363636;
+            border-radius: 6px;
+            line-height: 1.6;
+        }
+        .modal-dependencies {
+            margin-top: 16px;
+            padding: 12px;
+            background: #363636;
+            border-radius: 6px;
+        }
+        .modal-dependencies.empty {
+            color: #4ade80;
+        }
+        .modal-dependencies.has-deps {
+            color: #f87171;
+        }
+        .modal-desc code {
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+            font-size: 13px;
+        }
+        @media (max-width: 1024px) {
+            .kanban {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📹 Screen Studio Clone - Task Board</h1>
+        <div class="stats" id="stats">Loading tasks...</div>
+    </div>
+
+    <div class="phase-legend">
+        <div class="phase-badge show-all active" data-phase="all">All Phases</div>
+        <div class="phase-badge phase-0" data-phase="0">Phase 0</div>
+        <div class="phase-badge phase-1" data-phase="1">Phase 1</div>
+        <div class="phase-badge phase-5" data-phase="5">Phase 5</div>
+        <div class="phase-badge phase-2" data-phase="2">Phase 2</div>
+        <div class="phase-badge phase-3" data-phase="3">Phase 3</div>
+        <div class="phase-badge phase-4" data-phase="4">Phase 4</div>
+        <div class="phase-badge phase-6" data-phase="6">Phase 6</div>
+    </div>
+
+    <div class="kanban">
+        <div class="column" id="backlog" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <div class="column-header">
+                <span class="column-title">📋 Backlog</span>
+                <span class="column-count" id="backlog-count">0</span>
+            </div>
+            <div class="tasks" id="backlog-tasks"></div>
+        </div>
+
+        <div class="column" id="in-progress" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <div class="column-header">
+                <span class="column-title">🚀 In Progress</span>
+                <span class="column-count" id="progress-count">0</span>
+            </div>
+            <div class="tasks" id="progress-tasks"></div>
+        </div>
+
+        <div class="column" id="done" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <div class="column-header">
+                <span class="column-title">✅ Done</span>
+                <span class="column-count" id="done-count">0</span>
+            </div>
+            <div class="tasks" id="done-tasks"></div>
+        </div>
+    </div>
+
+    <div class="footer">
+        Tasks auto-loaded from task list. Drag cards between columns to update status.
+    </div>
+
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title" id="modal-title">Task Details</div>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-body">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const tasks = [
+            {
+                id: "1",
+                title: "Define Technical Architecture (Phase 0)",
+                phase: "0",
+                priority: "P0",
+                complexity: "Low",
+                desc: "Make technical decisions, set up infrastructure, finalize architecture",
+                details: `**Technical Approach:**
+• Evaluate C#/WinUI 3 vs Tauri vs Electron based on: performance (native Windows APIs), distribution (MSIX vs portable), team skills, cross-platform needs
+• Document decision rationale with pros/cons matrix
+• Create architecture diagram showing component relationships
+
+**Deliverables:**
+• Tech stack decision document (1-2 pages)
+• Architecture diagram (RecordingEngine → ProcessingPipeline → ExportEngine)
+• Component interface definitions (C# interfaces)
+• Data structure definitions (VideoFrame, CursorEvent, ZoomKeyframe)
+
+**Success Criteria:**
+• Tech stack decision documented and approved
+• Component interfaces defined as C# interfaces
+• Data structures for cursor/timeline/zoom finalized
+
+**Dependencies:** None
+
+**Windows APIs to Research:**
+• Windows.Graphics.Capture (screen capture)
+• Windows.Media.MediaFoundation (encoding)
+• DirectX.Direct3D11 (GPU rendering)
+• Windows.UI.Composition (effects)`,
+                blocked: []
+            },
+            {
+                id: "9",
+                title: "Decide tech stack (C#/WinUI 3 vs Tauri vs Electron)",
+                phase: "0",
+                priority: "P0",
+                complexity: "Low",
+                desc: "Evaluate C#/WinUI 3 vs Tauri vs Electron",
+                details: `**Technical Approach:**
+• C#/WinUI 3: Native Windows APIs, best performance, MSIX distribution
+• Tauri + React: Lightweight, Rust backend, indirect Windows API access
+• Electron + React: Familiar stack, heavy resource usage
+
+**Decision Matrix:**
+| Criterion | WinUI 3 | Tauri | Electron |
+|-----------|---------|-------|----------|
+| Performance | ⭐⭐⭐ | ⭐⭐ | ⭐ |
+| Windows APIs | Direct | Indirect | Indirect |
+| Bundle Size | ~10MB | ~15MB | ~150MB |
+| Learning Curve | C# | Rust+Web | Web only |
+
+**Recommendation:** C#/WinUI 3 for native performance and direct Windows Graphics Capture API access.
+
+**Success Criteria:**
+• Decision documented with rationale
+• Team alignment on approach
+• Risk mitigation plan for skill gaps
+
+**Dependencies:** None`,
+                blocked: []
+            },
+            {
+                id: "10",
+                title: "Set up project infrastructure (Visual Studio, Git, CI/CD)",
+                phase: "0",
+                priority: "P0",
+                complexity: "Low",
+                desc: "Visual Studio, Git, CI/CD setup",
+                details: `**Technical Approach:**
+• Create Visual Studio solution with proper project structure
+• Configure Git with proper .gitignore (build artifacts, bin/obj folders)
+• Set up GitHub Actions for automated Windows builds
+• Define code style guide (C# conventions, naming patterns)
+
+**Deliverables:**
+• Visual Studio solution that builds and runs "Hello World" app
+• Git repository with .gitignore
+• CI/CD pipeline (GitHub Actions or Azure DevOps)
+• Documentation folder structure
+
+**Success Criteria:**
+• Solution builds without errors
+• CI/CD successfully builds on push
+• Git commits follow conventional commit format
+
+**Dependencies:** Task #9
+
+**Commands:**
+\`\`\`batch
+dotnet new winui -o ScreenStudio
+git init
+\`\`\``,
+                blocked: []
+            },
+            {
+                id: "11",
+                title: "Finalize architecture (component interfaces, data structures)",
+                phase: "0",
+                priority: "P0",
+                complexity: "Low",
+                desc: "Component interfaces, data structures, rendering engine",
+                details: `**Technical Approach:**
+• Define C# interfaces for all major components
+• Design data flow: Recording → Processing → Export
+• Plan for thread safety and memory management
+
+**Component Interfaces (C#):**
+\`\`\`csharp
+public interface IRecordingEngine
+{
+    Task StartRecordingAsync(CancellationToken cancellationToken);
+    Task StopRecordingAsync();
+    void PauseRecording();
+    IReadOnlyList<VideoFrame> GetFrames();
+}
+
+public interface ICursorTracker
+{
+    Task StartTrackingAsync(CancellationToken cancellationToken);
+    void StopTracking();
+    IReadOnlyList<CursorEvent> GetEvents();
+}
+
+public interface IProcessingPipeline
+{
+    IReadOnlyList<SmoothedPath> ApplySmoothing(IReadOnlyList<CursorEvent> events);
+    IReadOnlyList<ZoomKeyframe> DetectZoomPoints(IReadOnlyList<CursorEvent> events);
+}
+
+public interface IExportEngine
+{
+    Task<ExportProgress> ExportAsync(ExportSettings settings, IProgress<ExportProgress> progress);
+}
+\`\`\`
+
+**Data Structures:**
+\`\`\`csharp
+public record VideoFrame(
+    TimeSpan Timestamp,
+    SoftwareBitmap Image,
+    CursorEvent? CursorEvent
+);
+
+public record CursorEvent(
+    TimeSpan Timestamp,
+    Point Location,
+    EventType Type,
+    float Pressure
+);
+
+public record ZoomKeyframe(
+    TimeSpan StartTime,
+    TimeSpan EndTime,
+    float ZoomLevel,
+    Point FocusPoint,
+    EasingFunction Easing
+);
+\`\`\`
+
+**Success Criteria:**
+• All component interfaces defined as C# interfaces
+• Data structures support timeline editing
+• Architecture supports undo/redo
+
+**Dependencies:** Tasks #9, #10`,
+                blocked: []
+            },
+            {
+                id: "29",
+                title: "Screen Capture: Windows.Graphics.Capture integration",
+                phase: "1",
+                priority: "P0",
+                complexity: "High",
+                desc: "API integration, callback setup, 60fps capture",
+                details: `**Technical Approach:**
+• Use Windows.Graphics.Capture API for real-time screen capture (Windows 10 1803+)
+• Set up Direct3D surface for frame delivery
+• Handle display configuration changes
+• Implement proper error handling for permissions
+
+**Windows APIs:**
+• Windows.Graphics.Capture.GraphicsCaptureItem - capture session
+• Windows.Graphics.Capture.Direct3D11CaptureFramePool - frame delivery
+• Windows.Graphics.DirectX.Direct3D11 - GPU surface management
+
+**Implementation:**
+\`\`\`csharp
+var item = CreateCaptureItemForMonitor();
+var framePool = Direct3D11CaptureFramePool.Create(
+    device,
+    DirectXPixelFormat.B8G8R8A8UIntNormalized,
+    2, // Number of buffers
+    item.Size
+);
+
+framePool.FrameArrived += (s, e) =>
+{
+    using var frame = e.Frame;
+    var bitmap = SoftwareBitmap.CopyFromSurface(frame.Surface);
+    // Process frame: timestamp, image, status
+    HandleFrame(bitmap, frame.SystemRelativeTime);
+};
+
+var session = framePool.CreateCaptureSession(item);
+session.StartCapture();
+\`\`\`
+
+**Key Challenges:**
+• Frame timing accuracy for 60fps
+• Memory management for SoftwareBitmap lifecycle
+• Handling multi-monitor scenarios
+• GraphicsCaptureAccess permission prompts
+
+**Success Criteria:**
+• 60fps capture sustained
+• <50ms frame latency
+• Handles display mode changes
+
+**Dependencies:** Tasks #9, #10, #11
+
+**Resources:**
+• Windows.Graphics.Capture documentation
+• Direct3D11CaptureFramePool samples`,
+                blocked: ["9","10","11"]
+            },
+            {
+                id: "30",
+                title: "Screen Capture: Implement circular frame buffer",
+                phase: "1",
+                priority: "P0",
+                complexity: "High",
+                desc: "Memory-efficient frame buffer, thread-safe",
+                details: `**Technical Approach:**
+• Circular buffer implementation for efficient memory usage
+• Thread-safe access from capture thread and processing thread
+• Automatic buffer management with configurable size
+
+**Data Structure:**
+\`\`\`csharp
+public class CircularFrameBuffer
+{
+    private readonly VideoFrame[] _buffer;
+    private int _head = 0;
+    private int _tail = 0;
+    private readonly object _lock = new();
+
+    public bool TryWrite(VideoFrame frame);
+    public bool TryRead(out VideoFrame frame);
+    public IReadOnlyList<VideoFrame> Drain();
+}
+\`\`\`
+
+**Implementation Details:**
+• Pre-allocated buffer (e.g., 5 minutes at 60fps = 18,000 frames)
+• Lock-free or atomic operations for performance
+• Proper SoftwareBitmap disposal (using statements)
+• Buffer full handling (overwrite oldest vs stop recording)
+
+**Memory Considerations:**
+• 1080p frame ~8MB raw → 144MB for 5 minutes
+• Consider in-memory compression or frame pooling
+• Memory pressure monitoring with MemoryManager.AppMemoryUsageIncreased
+
+**Success Criteria:**
+• 5-minute recording no memory growth
+• Thread-safe read/write under load
+• <5ms read/write latency
+
+**Dependencies:** Task #29`,
+                blocked: ["29"]
+            },
+            {
+                id: "31",
+                title: "Screen Capture: Performance optimization (CPU, memory)",
+                phase: "1",
+                priority: "P0",
+                complexity: "High",
+                desc: "<10% CPU, memory management",
+                details: `**Technical Approach:**
+• Profile with Visual Studio Profiler to identify bottlenecks
+• Optimize capture loop for minimal CPU overhead
+• Implement proper SoftwareBitmap lifecycle management
+• Use GPU acceleration where possible
+
+**Optimization Strategies:**
+• Use GPU-backed surfaces (Direct3D11)
+• Minimize frame copies (zero-copy where possible)
+• Optimize frame pool size
+• Reduce UI thread work
+
+**Memory Management:**
+\`\`\`csharp
+// Proper SoftwareBitmap lifecycle
+using var frame = e.Frame;
+using var bitmap = SoftwareBitmap.CopyFromSurface(frame.Surface);
+try
+{
+    // Process frame
+}
+finally
+{
+    bitmap.Dispose();
+}
+\`\`\`
+
+**CPU Target:**
+• Idle: <2% CPU
+• Recording: <10% CPU
+• Memory: <200MB for 5-minute recording
+
+**Profiling Tools:**
+• Visual Studio Diagnostic Tools
+• Performance Profiler
+• Memory Usage Analyzer
+
+**Success Criteria:**
+• <10% CPU during recording
+• No memory leaks over 10 minutes
+• Stable 60fps capture
+
+**Dependencies:** Task #30`,
+                blocked: ["30"]
+            },
+            {
+                id: "32",
+                title: "Cursor Tracking: Windows hook setup and permissions",
+                phase: "1",
+                priority: "P0",
+                complexity: "High",
+                desc: "Event hook setup, permissions",
+                details: `**Technical Approach:**
+• Use SetWindowsHookEx for global cursor event monitoring
+• Request low-level mouse hook permissions
+• Handle permission denial gracefully
+
+**Windows APIs:**
+• SetWindowsHookEx - install hook
+• WH_MOUSE_LL - low-level mouse hook
+• CallNextHookEx - pass to next hook
+
+**Implementation:**
+\`\`\`csharp
+private IntPtr _hookId = IntPtr.Zero;
+
+public void StartTracking()
+{
+    var hookProc = HookCallback;
+    _hookId = SetWindowsHookEx(
+        WH_MOUSE_LL,
+        hookProc,
+        GetModuleHandle(null),
+        0
+    );
+}
+
+private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
+{
+    if (nCode >= 0 && wParam == (IntPtr)WM_MOUSEMOVE)
+    {
+        var mouseHook = Marshal.PtrToStructure<MSLLHOOKSTRUCT>(lParam);
+        // Handle event
+        HandleMouseEvent(mouseHook);
+    }
+    return CallNextHookEx(_hookId, nCode, wParam, lParam);
+}
+\`\`\`
+
+**Permission Handling:**
+• Check for admin rights if needed
+• Show instructions if hook fails
+• Disable features that require cursor tracking
+• Retry mechanism after permission grant
+
+**Success Criteria:**
+• Captures all mouse events
+• Graceful permission denial handling
+• <1ms event latency
+
+**Dependencies:** Tasks #9, #11
+
+**Resources:**
+• Windows Hook documentation
+• Low-Level Mouse Hook samples`,
+                blocked: ["9","11"]
+            },
+            {
+                id: "33",
+                title: "Cursor Tracking: Timestamp sync with video frames",
+                phase: "1",
+                priority: "P0",
+                complexity: "High",
+                desc: "Sync with video frames",
+                details: `**Technical Approach:**
+• use QueryPerformanceCounter for high-precision timestamps
+• Interpolate cursor position for frame timestamps
+• Store events with nanosecond precision
+
+**Timestamp Strategy:**
+\`\`\`csharp
+public record CursorEvent(
+    TimeSpan Timestamp,  // QueryPerformanceCounter converted to TimeSpan
+    Point Location,      // Sub-pixel float coordinates
+    EventType Type,
+    float Pressure
+);
+
+public Point SyncEventToFrame(CursorEvent event, TimeSpan frameTime)
+{
+    // Interpolate position for exact frame timestamp
+    var dt = frameTime - event.Timestamp;
+    var velocity = CalculateVelocity(_previousEvent, event);
+    return new Point(
+        event.Location.X + velocity.X * (float)dt.TotalSeconds,
+        event.Location.Y + velocity.Y * (float)dt.TotalSeconds
+    );
+}
+\`\`\`
+
+**Challenges:**
+• Event and frame streams run on different clocks
+• Need accurate clock synchronization
+• Handle missing events (cursor stopped)
+• Interpolate for smooth playback
+
+**Success Criteria:**
+• Cursor synced within 1 frame (16.67ms at 60fps)
+• Sub-pixel accuracy maintained
+• No visible cursor drift
+
+**Dependencies:** Task #32`,
+                blocked: ["32"]
+            },
+            {
+                id: "34",
+                title: "Cursor Tracking: Click, drag, scroll event detection",
+                phase: "1",
+                priority: "P0",
+                complexity: "High",
+                desc: "Click, drag, scroll detection",
+                details: `**Technical Approach:**
+• Detect all mouse button states and transitions
+• Track drag state (mouse down + move)
+• Capture scroll events for potential zoom features
+
+**Event Types:**
+\`\`\`csharp
+public enum EventType
+{
+    Move,
+    LeftMouseDown, LeftMouseUp,
+    RightMouseDown, RightMouseUp,
+    Drag(Point Start, Point Current),
+    Scroll(Point Position, short Delta),
+    Enter, Exit
+}
+\`\`\`
+
+**Implementation:**
+\`\`\`csharp
+private CursorEvent HandleMouseEvent(MSLLHOOKSTRUCT hook)
+{
+    switch ((WM)wParam)
+    {
+        case WM.LBUTTONDOWN:
+            _isDragging = true;
+            _dragStart = GetPoint(hook);
+            return new CursorEvent(EventType.LeftMouseDown, _dragStart);
+        case WM.MOUSEMOVE:
+            if (_isDragging)
+                return new CursorEvent(EventType.Drag(_dragStart, GetPoint(hook)));
+            return new CursorEvent(EventType.Move, GetPoint(hook));
+        case WM.LBUTTONUP:
+            _isDragging = false;
+            return new CursorEvent(EventType.LeftMouseUp, GetPoint(hook));
+        case WM.MOUSEWHEEL:
+            return new CursorEvent(EventType.Scroll(GetPoint(hook), GetWheelDelta(hook)));
+    }
+}
+\`\`\`
+
+**Use Cases:**
+• Click detection for zoom focus points
+• Drag detection for zoom regions
+• Scroll for potential timeline scrubbing
+
+**Success Criteria:**
+• 100% event detection accuracy
+• Proper drag state machine
+• <5ms event processing latency
+
+**Dependencies:** Task #33`,
+                blocked: ["33"]
+            },
+            {
+                id: "14",
+                title: "Build basic recording UI (controls, indicator, shortcuts)",
+                phase: "1",
+                priority: "P0",
+                complexity: "Medium",
+                desc: "Controls, indicator, shortcuts",
+                details: `**Technical Approach:**
+• WinUI 3 XAML with Record/Stop/Pause buttons
+• Recording indicator (red dot with pulse animation)
+• Global keyboard shortcuts (Win+R to record)
+• Preview window during recording
+
+**UI Components:**
+\`\`\`xml
+<StackPanel Orientation="Horizontal" Spacing="8">
+    <Button Name="RecordButton" Click="StartRecording">
+        <StackPanel Orientation="Horizontal">
+            <SymbolIcon Symbol="Record"/>
+            <TextBlock Text="Record"/>
+        </StackPanel>
+    </Button>
+    <Button Name="StopButton" Click="StopRecording">
+        <SymbolIcon Symbol="Stop"/>
+    </Button>
+    <Button Name="PauseButton" Click="PauseRecording">
+        <SymbolIcon Symbol="Pause"/>
+    </Button>
+</StackPanel>
+\`\`\`
+
+**Recording Indicator:**
+• Red dot in title bar or overlay
+• Pulse animation using Storyboard
+• Time elapsed display
+
+**Keyboard Shortcuts:**
+• Win+R: Start/Stop recording
+• Win+.: Pause/Resume
+• Esc: Cancel recording
+
+**Preview Window:**
+• Picture-in-picture style during recording
+• Closeable on-demand preview
+
+**Success Criteria:**
+• Intuitive one-click recording
+• Visual feedback during recording
+• Shortcuts work system-wide
+
+**Dependencies:** Task #34`,
+                blocked: ["34"]
+            },
+            {
+                id: "35",
+                title: "Rendering Pipeline: Frame composition (video + cursor + zoom)",
+                phase: "5",
+                priority: "P0",
+                complexity: "High",
+                desc: "Compose video + cursor + zoom",
+                details: `**Technical Approach:**
+• Compose video frames with cursor overlay
+• Apply zoom transforms per frame
+• Use Direct2D or Composition APIs for GPU acceleration
+
+**Rendering Pipeline:**
+\`\`\`csharp
+public SoftwareBitmap ComposeFrame(VideoFrame frame, ZoomTransform? zoom)
+{
+    var image = frame.Image;
+
+    // Apply zoom if present
+    if (zoom != null)
+    {
+        image = ApplyZoom(image, zoom);
+    }
+
+    // Draw cursor on top
+    if (frame.CursorEvent != null)
+    {
+        image = DrawCursor(image, frame.CursorEvent.Location);
+    }
+
+    return image;
+}
+\`\`\`
+
+**Zoom Transform:**
+\`\`\`csharp
+public record ZoomTransform(
+    float Scale,           // 1.0 - 3.0
+    Point FocusPoint,      // Screen coordinates
+    EasingFunction Easing
+);
+
+private SoftwareBitmap ApplyZoom(SoftwareBitmap image, ZoomTransform zoom)
+{
+    // Use Direct2D effects for high-quality scaling
+    // or Composition APIs for transform
+}
+\`\`\`
+
+**Performance:**
+• Target: 60fps rendering
+• Use Direct2D for GPU acceleration
+• Batch frame processing
+
+**Success Criteria:**
+• 60fps real-time preview
+• Smooth zoom transitions
+• <16ms frame composition time
+
+**Dependencies:** Tasks #14, #31, #34`,
+                blocked: ["14","31","34"]
+            },
+            {
+                id: "36",
+                title: "Rendering Pipeline: Hardware acceleration",
+                phase: "5",
+                priority: "P0",
+                complexity: "High",
+                desc: "Hardware acceleration",
+                details: `**Technical Approach:**
+• Use DirectX/Direct2D for hardware-accelerated rendering
+• Leverage GPU for composition and effects
+• Configure for real-time performance
+
+**Windows APIs:**
+• DirectX.Direct3D11.D3D11Device - D3D11 device
+• Windows.UI.Composition.Compositor - composition layer
+• Direct2D effects - image processing
+
+**Implementation:**
+\`\`\`csharp
+var d3dDevice = CreateD3DDevice();
+var compositor = new Compositor();
+
+// Create composition surface for rendering
+var drawingSurface = compositor.CreateDrawingSurface(
+    size,
+    DirectXPixelFormat.B8G8R8A8UIntNormalized,
+    DirectAlphaMode.Premultiplied
+);
+
+// Use Direct2D for GPU-accelerated rendering
+using (var dc = CompositionDrawingSurface.BeginDraw(drawingSurface))
+{
+    var d2dDevice = GetD2DDevice(d3dDevice);
+    // Render with GPU acceleration
+}
+\`\`\`
+
+**Hardware Features:**
+• GPU-accelerated composition
+• Hardware H.264 encoding
+• Real-time effects
+
+**Success Criteria:**
+• GPU rendering confirmed
+• 60fps real-time encoding
+• <5% encoding CPU overhead
+
+**Dependencies:** Task #35`,
+                blocked: ["35"]
+            },
+            {
+                id: "37",
+                title: "H.264 Encoding: MediaFoundation and codec configuration",
+                phase: "5",
+                priority: "P0",
+                complexity: "High",
+                desc: "Codec configuration",
+                details: `**Technical Approach:**
+• Use Media Foundation for MP4 output
+• Configure H.264 codec settings
+• Handle encoding errors and recovery
+
+**Windows APIs:**
+• IMFMediaSink - MP4 file writer
+• IMFTransform - codec transform
+• IMFSinkWriter - media sink writer
+
+**Implementation:**
+\`\`\`csharp
+var attributes = new IMFAttributes();
+attributes.SetGUID(CLSID_MFTranscodeVideoTask, MFTranscodeVideoTask.H264);
+
+IMFSinkWriter sinkWriter;
+MFCreateSinkWriterFromURL(outputFile, null, attributes, out sinkWriter);
+
+var mediaType = new IMFMediaType();
+mediaType.SetGUID(MF_MT_MAJOR_TYPE, MFMediaType.Video);
+mediaType.SetGUID(MF_MT_SUBTYPE, MFVideoFormat.H264);
+mediaType.SetUINT32(MF_MT_AVG_BITRATE, 10_000_000); // 10 Mbps
+
+sinkWriter.AddStreamSink(mediaType);
+sinkWriter.BeginWriting();
+\`\`\`
+
+**Codec Options:**
+• H.264 Baseline/Main/High Profile
+• Bitrate control (CBR/VBR)
+• Keyframe interval (GOP size)
+
+**Success Criteria:**
+• Valid MP4 output
+• Playable in Windows Media Player/VLC
+• Configurable quality settings
+
+**Dependencies:** Tasks #35, #36`,
+                blocked: ["35","36"]
+            },
+            {
+                id: "38",
+                title: "H.264 Encoding: Resolution modes and quality presets",
+                phase: "5",
+                priority: "P0",
+                complexity: "High",
+                desc: "1080p/4K, presets, progress",
+                details: `**Technical Approach:**
+• Support multiple resolution presets
+• Quality trade-offs for export speed
+• Progress reporting during export
+
+**Resolution Presets:**
+\`\`\`csharp
+public enum ExportPreset
+{
+    YouTube_1080p,  // 1920x1080, 10Mbps
+    YouTube_4K,     // 3840x2160, 25Mbps
+    Twitter_720p,   // 1280x720, 5Mbps
+    Gif_Quality     // 480p, optimized for GIF
+}
+\`\`\`
+
+**Quality Settings:**
+| Preset | Resolution | Bitrate | Est. Export Time |
+|--------|------------|---------|------------------|
+| YouTube 1080p | 1920x1080 | 10 Mbps | <2min per 1min |
+| YouTube 4K | 3840x2160 | 25 Mbps | <5min per 1min |
+| Twitter 720p | 1280x720 | 5 Mbps | <1min per 1min |
+
+**Progress Reporting:**
+\`\`\`csharp
+public record ExportProgress(
+    int CurrentFrame,
+    int TotalFrames,
+    TimeSpan ElapsedTime
+)
+{
+    public double Progress => (double)CurrentFrame / TotalFrames;
+    public TimeSpan EstimatedTimeRemaining => ...;
+}
+\`\`\`
+
+**Success Criteria:**
+• 1080p: <2min per 1min recording
+• 4K: <5min per 1min recording
+• Progress updates every second
+
+**Dependencies:** Task #37`,
+                blocked: ["37"]
+            },
+            {
+                id: "17",
+                title: "Build export settings UI (resolution, quality, destination)",
+                phase: "5",
+                priority: "P0",
+                complexity: "Medium",
+                desc: "Resolution, quality, destination",
+                details: `**Technical Approach:**
+• WinUI 3 ContentDialog with export options
+• FileSavePicker for destination
+• Real-time file size estimation
+
+**UI Components:**
+\`\`\`xml
+<ContentDialog Title="Export Settings">
+    <StackPanel Spacing="8">
+        <ComboBox Header="Preset" SelectedItem="{x:Bind SelectedPreset}">
+            <ComboBoxItem>YouTube 1080p</ComboBoxItem>
+            <ComboBoxItem>YouTube 4K</ComboBoxItem>
+            <ComboBoxItem>Twitter 720p</ComboBoxItem>
+        </ComboBox>
+
+        <Button Content="Choose Destination..." Click="PickDestination"/>
+
+        <TextBlock>
+            <Run Text="Estimated size: "/>
+            <Run Text="{x:Bind EstimatedSize}"/>
+        </TextBlock>
+
+        <Button Content="Export" Click="StartExport"/>
+    </StackPanel>
+</ContentDialog>
+\`\`\`
+
+**Features:**
+• Preset descriptions with quality indicators
+• File size estimation based on recording duration
+• Resolution and bitrate preview
+• Export history
+
+**Success Criteria:**
+• Clear preset selection
+• Accurate file size estimates
+• Proper destination handling
+
+**Dependencies:** Tasks #37, #38`,
+                blocked: ["37","38"]
+            },
+            {
+                id: "18",
+                title: "Implement Catmull-Rom smoothing algorithm (configurable tension)",
+                phase: "2",
+                priority: "P1",
+                complexity: "Medium",
+                desc: "Spline interpolation, configurable tension",
+                details: `**Technical Approach:**
+• Implement Catmull-Rom spline interpolation
+• Configurable tension parameter (0.0 - 1.0)
+• Real-time preview of smoothing
+
+**Algorithm:**
+Catmull-Rom spline passes through all control points with smooth tangents.
+
+\`\`\`csharp
+public class CatmullRomSpline
+{
+    public IReadOnlyList<Point> Points { get; }
+    public float Tension { get; } // 0.0 = loose, 1.0 = tight
+
+    public Point Interpolate(float t)
+    {
+        var p0 = Points[Math.Max(0, (int)t - 1)];
+        var p1 = Points[(int)t];
+        var p2 = Points[Math.Min(Points.Count - 1, (int)t + 1)];
+        var p3 = Points[Math.Min(Points.Count - 1, (int)t + 2)];
+
+        var t0 = t % 1f;
+
+        // Catmull-Rom interpolation formula
+        var s = (1f - Tension) * 0.5f;
+
+        var s2 = s * s;
+        var s3 = s2 * s;
+
+        // Calculate interpolated point
+        return new Point(
+            (2 * p1.X) + (-p0.X + p2.X) * s + (2 * p0.X - 5 * p1.X + 4 * p2.X - p3.X) * s2 + (-p0.X + 3 * p1.X - 3 * p2.X + p3.X) * s3,
+            (2 * p1.Y) + (-p0.Y + p2.Y) * s + (2 * p0.Y - 5 * p1.Y + 4 * p2.Y - p3.Y) * s2 + (-p0.Y + 3 * p1.Y - 3 * p2.Y + p3.Y) * s3
+        );
+    }
+}
+\`\`\`
+
+**Tension Values:**
+• 0.0: Very loose, overshoots
+• 0.5: Default, balanced
+• 1.0: Tight, minimal overshoot
+
+**Performance:**
+• Pre-calculate spline once per edit
+• Real-time preview at 60fps
+
+**Success Criteria:**
+• Smooth cursor paths
+• Configurable tension
+• <16ms spline calculation
+
+**Dependencies:** Tasks #15, #16 (internal smoothing tasks)`,
+                blocked: ["15","16"]
+            },
+            {
+                id: "19",
+                title: "Build smoothing UI (intensity slider, real-time preview)",
+                phase: "2",
+                priority: "P1",
+                complexity: "Low",
+                desc: "Intensity slider, real-time preview",
+                details: `**Technical Approach:**
+• Slider for smoothing intensity
+• Real-time preview in timeline
+• Undo/Reset controls
+
+**UI Components:**
+\`\`\`xml
+<StackPanel Spacing="8">
+    <Slider Header="Intensity"
+            Value="{x:Bind Intensity}"
+            Minimum="0" Maximum="1"
+            StepFrequency="0.01"/>
+
+    <TextBlock>
+        <Run Text="{x:Bind Intensity, Mode=OneWay}"/>
+        <Run Text="%"/>
+    </TextBlock>
+
+    <StackPanel Orientation="Horizontal" Spacing="8">
+        <Button Content="Reset" Click="ResetSmoothing"/>
+        <Button Content="Undo" Click="UndoSmoothing"/>
+    </StackPanel>
+
+    <PreviewWindow Recording="{x:Bind Recording}"
+                    Smoothing="{x:Bind CurrentSettings}"/>
+</StackPanel>
+\`\`\`
+
+**Features:**
+• Intensity: 0% (raw) to 100% (maximum smoothing)
+• Tension: Control curve tightness
+• Before/after comparison
+• Preset buttons (Light, Medium, Heavy)
+
+**Success Criteria:**
+• Real-time preview at 60fps
+• Smooth slider response
+• Intuitive controls
+
+**Dependencies:** Task #18`,
+                blocked: ["18"]
+            },
+            {
+                id: "39",
+                title: "Zoom Detection: Velocity-based action analysis",
+                phase: "3",
+                priority: "P1",
+                complexity: "High",
+                desc: "Action detection, velocity thresholds",
+                details: `**Technical Approach:**
+• Analyze cursor velocity to detect significant actions
+• Configurable velocity thresholds
+• Machine learning optional for better accuracy
+
+**Velocity Calculation:**
+\`\`\`csharp
+public IReadOnlyList<ActionPoint> DetectActions(IReadOnlyList<CursorEvent> events)
+{
+    var actions = new List<ActionPoint>();
+
+    for (int i = 1; i < events.Count; i++)
+    {
+        var dt = events[i].Timestamp - events[i - 1].Timestamp;
+        var dx = events[i].Location.X - events[i - 1].Location.X;
+        var dy = events[i].Location.Y - events[i - 1].Location.Y;
+        var velocity = Math.Sqrt(dx * dx + dy * dy) / dt.TotalSeconds;
+
+        // Detect velocity spike (possible action)
+        if (velocity > Threshold && PreviousVelocity < Threshold)
+        {
+            actions.Add(new ActionPoint(
+                events[i].Timestamp,
+                events[i].Location,
+                ActionType.Action,
+                confidence: velocity / Threshold
+            ));
+        }
+    }
+
+    return actions;
+}
+\`\`\`
+
+**Thresholds:**
+• Low: 500 px/sec (more sensitive)
+• Medium: 1000 px/sec (balanced)
+• High: 2000 px/sec (less sensitive)
+
+**Success Criteria:**
+• 80%+ action detection rate
+• <5% false positives
+• Configurable sensitivity
+
+**Dependencies:** Task #18`,
+                blocked: ["18"]
+            },
+            {
+                id: "40",
+                title: "Zoom Detection: Dwell and click-drag detection",
+                phase: "3",
+                priority: "P1",
+                complexity: "High",
+                desc: "Pause, click-drag detection",
+                details: `**Technical Approach:**
+• Detect dwell zones (cursor stops for significant time)
+• Detect click-drag operations for zoom focus
+• Combine with velocity analysis
+
+**Dwell Detection:**
+\`\`\`csharp
+public IReadOnlyList<DwellZone> DetectDwellZones(IReadOnlyList<CursorEvent> events)
+{
+    var dwells = new List<DwellZone>();
+    DwellZone? currentDwell = null;
+
+    foreach (var event in events)
+    {
+        if (event.Velocity < 50) // Essentially stopped
+        {
+            if (currentDwell == null)
+                currentDwell = new DwellZone(event.Timestamp, event.Location);
+            else
+                currentDwell.Duration = event.Timestamp - currentDwell.Start;
+        }
+        else
+        {
+            if (currentDwell != null && currentDwell.Duration > TimeSpan.FromSeconds(0.5))
+                dwells.Add(currentDwell);
+            currentDwell = null;
+        }
+    }
+
+    return dwells;
+}
+\`\`\`
+
+**Click-Drag Detection:**
+• Left-click down + movement = zoom region
+• Duration-based zoom (hold longer = closer)
+
+**Combined Detection:**
+Priority: Click-drag > Dwell > Velocity spike
+
+**Success Criteria:**
+• Dwell detection: 0.5s minimum
+• Click-drag: 100% accuracy
+• Combined: 90%+ relevant zooms
+
+**Dependencies:** Task #39`,
+                blocked: ["39"]
+            },
+            {
+                id: "41",
+                title: "Zoom Animation: Ease-in-out easing functions",
+                phase: "3",
+                priority: "P1",
+                complexity: "High",
+                desc: "Ease-in-out functions",
+                details: `**Technical Approach:**
+• Implement standard easing functions
+• Smooth zoom transitions
+• Configurable duration
+
+**Easing Functions:**
+\`\`\`csharp
+public enum EasingFunction
+{
+    Linear,
+    EaseInQuad, EaseOutQuad, EaseInOutQuad,
+    EaseInCubic, EaseOutCubic, EaseInOutCubic,
+    EaseInOutBack,
+    Spring(float damping, float velocity)
+}
+
+public static class EasingExtensions
+{
+    public static float Apply(this EasingFunction func, float t)
+    {
+        return func switch
+        {
+            EasingFunction.Linear => t,
+            EasingFunction.EaseInQuad => t * t,
+            EasingFunction.EaseOutQuad => t * (2 - t),
+            EasingFunction.EaseInOutQuad => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t,
+            EasingFunction.EaseInOutCubic => t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1,
+            _ => t // Default
+        };
+    }
+}
+\`\`\`
+
+**Animation Parameters:**
+• Duration: 0.5s - 2.0s (configurable)
+• Default: EaseInOutCubic (natural feel)
+• Spring: for bouncy effects
+
+**Success Criteria:**
+• Smooth 60fps animations
+• No jarring transitions
+• Configurable feel
+
+**Dependencies:** Task #40`,
+                blocked: ["40"]
+            },
+            {
+                id: "42",
+                title: "Zoom Animation: Keyframe storage and editing",
+                phase: "3",
+                priority: "P1",
+                complexity: "High",
+                desc: "Keyframe storage, editing",
+                details: `**Technical Approach:**
+• Store zoom keyframes in timeline
+• Support CRUD operations on keyframes
+• Render keyframe visualization
+
+**Data Structure:**
+\`\`\`csharp
+public record ZoomKeyframe(
+    Guid Id,
+    TimeSpan StartTime,
+    TimeSpan EndTime,
+    float ZoomLevel,      // 1.0 - 3.0
+    Point FocusPoint,
+    EasingFunction Easing,
+    TimeSpan Duration     // Transition time
+);
+
+public class ZoomTimeline
+{
+    public ObservableCollection<ZoomKeyframe> Keyframes { get; }
+
+    public void Add(ZoomKeyframe keyframe);
+    public void Remove(Guid id);
+    public void Update(ZoomKeyframe keyframe);
+    public IReadOnlyList<ZoomKeyframe> GetInRange(TimeSpan start, TimeSpan end);
+}
+\`\`\`
+
+**Editing Operations:**
+• Add: Detect action → auto-create keyframe
+• Remove: Select and delete
+• Update: Drag to reposition, adjust parameters
+• Interpolate: Auto-fill gaps between keyframes
+
+**Visualization:**
+• Timeline markers for each keyframe
+• Diamond shape for zoom points
+• Connected curve showing zoom path
+
+**Success Criteria:**
+• Keyframe CRUD operations work
+• Undo/redo support
+• <100ms edit latency
+
+**Dependencies:** Task #41`,
+                blocked: ["41"]
+            },
+            {
+                id: "22",
+                title: "Build zoom timeline visualization (keyframes, drag editing)",
+                phase: "3",
+                priority: "P1",
+                complexity: "Medium",
+                desc: "Keyframes, drag editing",
+                details: `**Technical Approach:**
+• WinUI 3 Canvas for timeline
+• Draggable keyframe markers
+• Real-time preview during edit
+
+**UI Components:**
+\`\`\`xml
+<Canvas x:Name="TimelineCanvas">
+    <!-- Time ruler -->
+    <TimelineRuler Zoom="{x:Bind Zoom}" Offset="{x:Bind ScrollOffset}"/>
+
+    <!-- Keyframes (rendered via code-behind) -->
+    <ItemsControl ItemsSource="{x:Bind Timeline.Keyframes}">
+        <ItemsControl.ItemTemplate>
+            <DataTemplate>
+                <Ellipse Width="12" Height="12"
+                         Fill="Orange"
+                         Canvas.Left="{Binding Position}"
+                         Canvas.Top="{Binding TrackOffset}"
+                         PointerPressed="OnKeyframeDown"
+                         PointerMoved="OnKeyframeMove"/>
+            </DataTemplate>
+        </ItemsControl.ItemTemplate>
+    </ItemsControl>
+</Canvas>
+\`\`\`
+
+**Interactions:**
+• Click to select keyframe
+• Drag horizontally to reposition in time
+• Drag vertically to adjust zoom level
+• Double-click to edit parameters
+
+**Success Criteria:**
+• Smooth 60fps rendering
+• Responsive drag interaction
+• Visual feedback during edit
+
+**Dependencies:** Task #42`,
+                blocked: ["42"]
+            },
+            {
+                id: "43",
+                title: "Timeline Component: Visual timeline (ruler, tracks, thumbnails)",
+                phase: "4",
+                priority: "P2",
+                complexity: "High",
+                desc: "Ruler, tracks, thumbnails",
+                details: `**Technical Approach:**
+• Multi-track timeline UI
+• Time ruler with zoom controls
+• Thumbnail strip for visual navigation
+
+**Components:**
+• Time ruler: Seconds/milliseconds display
+• Video track: Shows clip boundaries
+• Cursor track: Shows cursor path
+• Zoom track: Shows zoom keyframes
+• Thumbnail strip: Frame samples every second
+
+**Implementation:**
+\`\`\`xml
+<Grid>
+    <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"/>  <!-- Ruler -->
+        <RowDefinition Height="*"/>     <!-- Tracks -->
+        <RowDefinition Height="120"/>  <!-- Thumbnails -->
+    </Grid.RowDefinitions>
+
+    <!-- Time ruler with zoom controls -->
+    <TimelineRuler Zoom="{x:Bind Zoom}" ScrollOffset="{x:Bind ScrollOffset}"/>
+
+    <!-- Tracks -->
+    <ScrollViewer Grid.Row="1">
+        <StackPanel>
+            <TimelineTrack Type="Video" Timeline="{x:Bind Timeline}"/>
+            <TimelineTrack Type="Cursor" Timeline="{x:Bind Timeline}"/>
+            <TimelineTrack Type="Zoom" Timeline="{x:Bind Timeline}"/>
+        </StackPanel>
+    </ScrollViewer>
+
+    <!-- Thumbnail strip -->
+    <ThumbnailStrip Grid.Row="2" Recording="{x:Bind Recording}" Zoom="{x:Bind Zoom}"/>
+
+    <!-- Playhead overlay -->
+    <TimelinePlayhead Position="{x:Bind PlayheadPosition}"/>
+</Grid>
+\`\`\`
+
+**Features:**
+• Zoom in/out (Ctrl +/-)
+• Scroll to navigate
+• Track height adjustment
+• Thumbnail density control
+
+**Success Criteria:**
+• 60fps scroll/zoom
+• Smooth playhead scrubbing
+• Responsive UI
+
+**Dependencies:** Task #22`,
+                blocked: ["22"]
+            },
+            {
+                id: "44",
+                title: "Timeline Component: Scrubbing engine (60fps playhead)",
+                phase: "4",
+                priority: "P2",
+                complexity: "High",
+                desc: "60fps playhead scrubbing",
+                details: `**Technical Approach:**
+• Efficient frame lookup for scrubbing
+• Preload frames around playhead
+• Smooth 60fps playback
+
+**Scrubbing Strategy:**
+\`\`\`csharp
+public class ScrubbingEngine
+{
+    private readonly FrameCache _frameCache;
+    private Task? _preloadTask;
+
+    public async Task<SoftwareBitmap?> SeekAsync(TimeSpan time)
+    {
+        // Check cache first
+        if (_frameCache.TryGetValue(time, out var frame))
+            return frame;
+
+        // Load frame from storage
+        frame = await LoadFrameAsync(time);
+        _frameCache[time] = frame;
+
+        // Preload nearby frames
+        PreloadNearby(time);
+
+        return frame;
+    }
+
+    private void PreloadNearby(TimeSpan time)
+    {
+        _preloadTask?.Cancel(); // Cancel previous preload
+        _preloadTask = Task.Run(async () =>
+        {
+            foreach (var offset in new[] { -1, 1, -2, 2 })
+            {
+                var t = time + TimeSpan.FromSeconds(offset / 60.0);
+                await LoadFrameAsync(t);
+            }
+        });
+    }
+}
+\`\`\`
+
+**Optimizations:**
+• LRU cache for recent frames
+• Predictive preloading based on scrub direction
+• I/O bound operations on background thread
+
+**Success Criteria:**
+• 60fps smooth scrubbing
+• <100ms seek latency
+• No frame drops
+
+**Dependencies:** Task #43`,
+                blocked: ["43"]
+            },
+            {
+                id: "45",
+                title: "Timeline Editing: Trim/cut operations with undo support",
+                phase: "4",
+                priority: "P2",
+                complexity: "Medium",
+                desc: "<100ms latency, undo",
+                details: `**Technical Approach:**
+• Non-destructive editing (in/out points)
+• Command pattern for undo/redo
+• Efficient trim operation
+
+**Editing Model:**
+\`\`\`csharp
+public record TimelineRegion(TimeSpan Start, TimeSpan End, bool Enabled = true);
+
+public class TimelineStore
+{
+    public ObservableCollection<TimelineRegion> Regions { get; }
+    private Stack<ICommand> _undoStack = new();
+    private Stack<ICommand> _redoStack = new();
+
+    public void Trim(TimeSpan from, TimeSpan to)
+    {
+        var command = new TrimCommand(from, to, this);
+        command.Execute();
+        _undoStack.Push(command);
+        _redoStack.Clear();
+    }
+
+    public void Undo()
+    {
+        if (_undoStack.TryPop(out var command))
+        {
+            command.Undo();
+            _redoStack.Push(command);
+        }
+    }
+
+    public void Redo()
+    {
+        if (_redoStack.TryPop(out var command))
+        {
+            command.Execute();
+            _undoStack.Push(command);
+        }
+    }
+}
+\`\`\`
+
+**Operations:**
+• Trim: Set in/out points
+• Split: Cut at playhead
+• Delete: Remove section
+• Ripple edit: Shift subsequent content
+
+**Success Criteria:**
+• <100ms operation latency
+• 20+ undo levels
+• Ctrl+Z / Ctrl+Y work
+
+**Dependencies:** Task #44`,
+                blocked: ["44"]
+            },
+            {
+                id: "46",
+                title: "Timeline Editing: Selection tools and keyboard modifiers",
+                phase: "4",
+                priority: "P2",
+                complexity: "Medium",
+                desc: "Keyboard modifiers, selection",
+                details: `**Technical Approach:**
+• Standard selection patterns (Click, Shift-click, Ctrl-click)
+• Marquee selection for ranges
+• Keyboard shortcuts
+
+**Selection Patterns:**
+\`\`\`csharp
+public enum SelectionMode
+{
+    Single,     // Click to select one
+    Contiguous,  // Shift-click for range
+    Multiple,   // Ctrl-click for multiple
+    Marquee     // Drag to select range
+}
+
+public class SelectionManager
+{
+    public IndexSet SelectedRegions { get; }
+    private SelectionMode _mode = SelectionMode.Single;
+
+    public void HandleClick(int index, VirtualKeyModifiers modifiers)
+    {
+        switch (modifiers)
+        {
+            case VirtualKeyModifiers.None:
+                _mode = SelectionMode.Single;
+                SelectedRegions = new IndexSet[] { index };
+                break;
+            case VirtualKeyModifiers.Shift:
+                _mode = SelectionMode.Contiguous;
+                // Extend from last selected
+                break;
+            case VirtualKeyModifiers.Control:
+                _mode = SelectionMode.Multiple;
+                // Toggle selection
+                break;
+        }
+    }
+}
+\`\`\`
+
+**Keyboard Shortcuts:**
+• A: Select all
+• Escape: Deselect all
+• Delete: Remove selected
+• Ctrl+C: Copy selection
+• Ctrl+V: Paste (if implemented)
+
+**Success Criteria:**
+• Familiar selection behavior
+• Visual feedback for selection
+• Responsive to keyboard input
+
+**Dependencies:** Task #45`,
+                blocked: ["45"]
+            },
+            {
+                id: "47",
+                title: "Preview Window: Real-time preview sync with timeline",
+                phase: "4",
+                priority: "P2",
+                complexity: "Medium",
+                desc: "Sync with timeline",
+                details: `**Technical Approach:**
+• Dedicated preview window
+• Sync with timeline playhead
+• Show effects in real-time
+
+**Preview Components:**
+\`\`\`xml
+<ContentDialog x:Name="PreviewDialog">
+    <Grid>
+        <!-- Video preview with effects applied -->
+        <PreviewFrame Recording="{x:Bind Timeline.Recording}"
+                     Playhead="{x:Bind Timeline.Playhead}"
+                     Effects="{x:Bind Timeline.ActiveEffects}"/>
+
+        <!-- Playback controls -->
+        <PlaybackControls IsPlaying="{x:Bind IsPlaying}"
+                         Timeline="{x:Bind Timeline}"/>
+
+        <!-- Timecode display -->
+        <TextBlock Text="{x:Bind Timecode(Timeline.Playhead)}"/>
+    </Grid>
+</ContentDialog>
+\`\`\`
+
+**Sync Mechanism:**
+• DispatcherTimer-driven playback (60fps)
+• Timeline publishes playhead changes
+• Preview subscribes and updates frame
+
+**Features:**
+• Play/Pause/Stop
+• Frame-by-frame (←/→)
+• Speed control (1x, 2x, 0.5x)
+• Full-screen mode
+
+**Success Criteria:**
+• Playhead sync within 1 frame
+• Smooth playback at all speeds
+• No audio/video desync
+
+**Dependencies:** Task #46`,
+                blocked: ["46"]
+            },
+            {
+                id: "48",
+                title: "Preview Window: Before/after toggle and full-screen mode",
+                phase: "4",
+                priority: "P2",
+                complexity: "Low",
+                desc: "Toggle comparison, full-screen",
+                details: `**Technical Approach:**
+• Side-by-side or toggle comparison
+• Full-screen using native Windows APIs
+• Keyboard shortcuts
+
+**Before/After Comparison:**
+\`\`\`csharp
+public bool ShowBefore { get; set; }
+
+private void UpdatePreview()
+{
+    if (ShowBefore)
+        PreviewFrame.Source = OriginalFrame(Recording, Playhead);
+    else
+        PreviewFrame.Source = ProcessedFrame(Recording, Playhead, Effects);
+}
+\`\`\`
+
+**Comparison Modes:**
+• Toggle: Space bar to switch
+• Side-by-side: Split view
+• Slider: Wipe comparison
+
+**Full-Screen:**
+\`\`\`csharp
+private void ToggleFullScreen()
+{
+    var appWindow = GetAppWindowForCurrentWindow();
+    if (appWindow.Presenter.Kind == AppWindowPresenterKind.FullScreen)
+        appWindow.Presenter.EnterFullScreenMode();
+    else
+        appWindow.Presenter.ExitFullScreenMode();
+}
+\`\`\`
+
+**Keyboard Shortcuts:**
+• Space: Play/Pause
+• F: Full-screen toggle
+• Tab: Before/After comparison
+• Esc: Exit full-screen
+
+**Success Criteria:**
+• Instant mode switching
+• Smooth full-screen transition
+• Intuitive shortcuts
+
+**Dependencies:** Task #47`,
+                blocked: ["47"]
+            },
+            {
+                id: "26",
+                title: "Optimize performance (profiling, memory, background processing)",
+                phase: "6",
+                priority: "P2",
+                complexity: "Medium",
+                desc: "Profiling, memory, background processing",
+                details: `**Technical Approach:**
+• Profile with Visual Studio Profiler
+• Optimize hotspots
+• Implement background processing
+
+**Profiling Areas:**
+• CPU usage during recording
+• Memory allocations
+• Frame processing pipeline
+• Export encoding performance
+
+**Optimizations:**
+• Move heavy work to background threads
+• Use async/await for I/O operations
+• Implement object pooling
+• Reduce UI thread work
+
+**Background Processing:**
+\`\`\`csharp
+public class ProcessingActor
+{
+    public async Task<ProcessedFrame> ProcessFrameAsync(VideoFrame frame)
+    {
+        return await Task.Run(() =>
+        {
+            // Run on background thread
+            return HeavyProcessing(frame);
+        });
+    }
+}
+\`\`\`
+
+**Memory Management:**
+• Dispose SoftwareBitmap properly
+• Lazy loading for thumbnails
+• Frame pooling vs constant allocation
+
+**Success Criteria:**
+• <3s app launch
+• No memory leaks over 10 minutes
+• <10% CPU during idle
+
+**Dependencies:** None`,
+                blocked: []
+            },
+            {
+                id: "27",
+                title: "Refine UX experience (shortcuts, onboarding, error handling)",
+                phase: "6",
+                priority: "P2",
+                complexity: "Low",
+                desc: "Shortcuts, onboarding, errors",
+                details: `**Technical Approach:**
+• Comprehensive keyboard shortcuts
+• First-run onboarding
+• Graceful error handling
+
+**Keyboard Shortcuts:**
+\`\`\`csharp
+// Recording
+Win+R: Start/Stop recording
+Win+.: Pause/Resume
+
+// Timeline
+Space: Play/Pause
+←/→: Frame step
+Home/End: Jump to start/end
+
+// Editing
+Ctrl+Z: Undo
+Ctrl+Y: Redo
+Delete: Remove selection
+
+// View
+Ctrl+0: Fit timeline
+Ctrl+1-3: Zoom levels
+F: Full-screen
+\`\`\`
+
+**Onboarding Flow:**
+1. Welcome screen with app overview
+2. Permission requests (Screen Capture)
+3. Quick tour of recording controls
+4. Tip: "Press Win+R to start recording"
+
+**Error Handling:**
+• Permission denial: Clear instructions
+• Disk full: Warn before recording
+• Encoding errors: Retry dialog
+• Crash reporting: Optional, privacy-respecting
+
+**Success Criteria:**
+• First export within 15 minutes
+• Clear error messages
+• Intuitive shortcuts
+
+**Dependencies:** None`,
+                blocked: []
+            },
+            {
+                id: "28",
+                title: "Run testing and QA (Windows versions, benchmarks, UAT)",
+                phase: "6",
+                priority: "P2",
+                complexity: "Low",
+                desc: "Windows versions, benchmarks, UAT",
+                details: `**Technical Approach:**
+• Test across Windows versions
+• Performance benchmarking
+• User acceptance testing
+
+**Test Matrix:**
+| OS Version | Recording | Export | Effects |
+|------------|-----------|--------|---------|
+| Win 11 22H2+ | ✅ | ✅ | ✅ |
+| Win 10 22H2 | ✅ | ✅ | ⚠️ |
+| Win 10 1809+ | ✅ | ✅ | ❌ (limited WGC support) |
+
+**Benchmarking:**
+• Recording CPU/Memory usage
+• Export speed per resolution
+• Timeline scrubbing fps
+• App launch time
+
+**Test Scenarios:**
+• 1-minute recording: All features
+• 10-minute recording: Memory stability
+• 4K export: Performance
+• Multi-monitor: Capture correctness
+
+**UAT Questions:**
+• Could you start recording without help?
+• Were the controls intuitive?
+• Did the export meet expectations?
+• Any crashes or unexpected behavior?
+
+**Success Criteria:**
+• No crashes in QA
+• Passes all test scenarios
+• Positive UAT feedback
+
+**Dependencies:** None`,
+                blocked: []
+            }
+        ];
+
+        const phaseColors = {
+            "0": "#3b82f6",
+            "1": "#10b981",
+            "5": "#f59e0b",
+            "2": "#8b5cf6",
+            "3": "#ec4899",
+            "4": "#f97316",
+            "6": "#6b7280"
+        };
+
+        let currentFilter = 'all';
+
+        function createTaskCard(task) {
+            const card = document.createElement('div');
+            card.className = 'task-card';
+            card.draggable = true;
+            card.dataset.taskId = task.id;
+
+            const blockedBy = task.blocked.length > 0 ? task.blocked.join(', ') : 'None';
+            const isBlocked = task.blocked.length > 0;
+
+            card.innerHTML = `
+                <span class="phase-tag phase-${task.phase}">Phase ${task.phase}</span>
+                <div class="task-id">#${task.id}</div>
+                <div class="task-title">${task.title}</div>
+                <div class="task-desc">${task.desc}</div>
+                <div class="meta">
+                    <span class="priority-p${task.priority.toLowerCase().replace('P', '')}">${task.priority}</span>
+                    <span class="complexity-${task.complexity.toLowerCase()}">${task.complexity}</span>
+                    <span class="blocked-by">${isBlocked ? '🔒 ' + blockedBy : '✅ Ready'}</span>
+                </div>
+            `;
+
+            card.addEventListener('dragstart', (e) => {
+                card.classList.add('dragging');
+                e.dataTransfer.setData('text/plain', task.id);
+            });
+
+            card.addEventListener('dragend', () => {
+                card.classList.remove('dragging');
+            });
+
+            card.addEventListener('click', () => openModal(task));
+
+            return card;
+        }
+
+        function renderTasks() {
+            const backlog = document.getElementById('backlog-tasks');
+            const progress = document.getElementById('progress-tasks');
+            const done = document.getElementById('done-tasks');
+
+            backlog.innerHTML = '';
+            progress.innerHTML = '';
+            done.innerHTML = '';
+
+            let backlogCount = 0, progressCount = 0, doneCount = 0;
+
+            // Filter and render tasks
+            const filteredTasks = currentFilter === 'all'
+                ? tasks
+                : tasks.filter(t => t.phase === currentFilter);
+
+            filteredTasks.forEach(task => {
+                const card = createTaskCard(task);
+                backlog.appendChild(card);
+                backlogCount++;
+            });
+
+            document.getElementById('backlog-count').textContent = backlogCount;
+            document.getElementById('progress-count').textContent = progressCount;
+            document.getElementById('done-count').textContent = doneCount;
+
+            // Update stats
+            const total = filteredTasks.length;
+            const blocked = filteredTasks.filter(t => t.blocked.length > 0).length;
+            document.getElementById('stats').textContent =
+                `${total} tasks ${currentFilter !== 'all' ? '(filtered) ' : ''}• ${blocked} blocked • ${total - blocked} actionable`;
+        }
+
+        function openModal(task) {
+            const modal = document.getElementById('modal-overlay');
+            const title = document.getElementById('modal-title');
+            const body = document.getElementById('modal-body');
+
+            const phaseNames = {
+                '0': 'Foundation',
+                '1': 'Recording',
+                '5': 'Export',
+                '2': 'Smoothing',
+                '3': 'Auto-Zoom',
+                '4': 'Timeline',
+                '6': 'Polish'
+            };
+
+            const complexityClass = `complexity-badge-${task.complexity.toLowerCase()}`;
+
+            title.innerHTML = `
+                Task #${task.id}: ${task.title}
+                <span class="modal-header-complexity ${complexityClass}">${task.complexity}</span>
+            `;
+
+            // Parse details and convert markdown-like formatting to HTML
+            const formattedDetails = task.details
+                .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+                .replace(/`([^`]+)`/g, '<code style="background: #404040; padding: 2px 6px; border-radius: 4px;">$1</code>')
+                .replace(/\n/g, '<br>')
+                .replace(/• /g, '&bull; ')
+                .replace(/\| /g, '<span style="margin-right: 20px;">| </span>');
+
+            const depsHtml = task.blocked.length === 0
+                ? '<div class="modal-dependencies empty">✅ No dependencies - this task can be started!</div>'
+                : '<div class="modal-dependencies has-deps">🔒 Blocked by tasks: #' + task.blocked.join(', #') + '</div>';
+
+            body.innerHTML = `
+                <div class="modal-row">
+                    <div class="modal-label">Phase:</div>
+                    <div class="modal-value">Phase ${task.phase} - ${phaseNames[task.phase]}</div>
+                </div>
+                <div class="modal-row">
+                    <div class="modal-label">Priority:</div>
+                    <div class="modal-value priority-p${task.priority.toLowerCase().replace('P', '')}">${task.priority}</div>
+                </div>
+                <div class="modal-row">
+                    <div class="modal-label">Complexity:</div>
+                    <div class="modal-value complexity-${task.complexity.toLowerCase()}">${task.complexity}</div>
+                </div>
+                <div class="modal-desc">
+                    <strong>Summary:</strong><br>${task.desc}
+                </div>
+                ${depsHtml}
+                <div class="modal-desc" style="margin-top: 16px; max-height: 400px; overflow-y: auto;">
+                    ${formattedDetails}
+                </div>
+            `;
+
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('modal-overlay');
+            modal.classList.remove('active');
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('modal-overlay').addEventListener('click', (e) => {
+            if (e.target.id === 'modal-overlay') {
+                closeModal();
+            }
+        });
+
+        // Phase filter handlers
+        document.querySelectorAll('.phase-badge[data-phase]').forEach(badge => {
+            badge.addEventListener('click', () => {
+                document.querySelectorAll('.phase-badge').forEach(b => b.classList.remove('active'));
+                badge.classList.add('active');
+                currentFilter = badge.dataset.phase;
+                renderTasks();
+            });
+        });
+
+        function allowDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('drag-over');
+        }
+
+        function drop(e) {
+            e.preventDefault();
+            const column = e.currentTarget;
+            column.classList.remove('drag-over');
+
+            const taskId = e.dataTransfer.getData('text/plain');
+            const card = document.querySelector(`[data-task-id="${taskId}"]`);
+
+            if (card && column.classList.contains('column')) {
+                const tasksContainer = column.querySelector('.tasks') || column;
+                tasksContainer.appendChild(card);
+
+                // Update status based on column
+                if (column.id === 'backlog') updateStatus(taskId, 'pending');
+                else if (column.id === 'in-progress') updateStatus(taskId, 'in-progress');
+                else if (column.id === 'done') updateStatus(taskId, 'done');
+
+                updateColumnCounts();
+            }
+        }
+
+        function updateStatus(taskId, newStatus) {
+            // In a real implementation, this would call TaskUpdate
+            console.log(`Task #${taskId} → ${newStatus}`);
+        }
+
+        function updateColumnCounts() {
+            ['backlog', 'progress', 'done'].forEach(col => {
+                const container = document.getElementById(`${col}-tasks`);
+                const count = container.children.length;
+                document.getElementById(`${col}-count`).textContent = count;
+            });
+        }
+
+        // Initialize
+        renderTasks();
+
+        // Make columns droppable
+        document.querySelectorAll('.column').forEach(column => {
+            column.addEventListener('dragover', allowDrop);
+            column.addEventListener('drop', drop);
+            column.addEventListener('dragleave', () => {
+                column.classList.remove('drag-over');
+            });
+        });
+    </script>
+</body>
+</html>

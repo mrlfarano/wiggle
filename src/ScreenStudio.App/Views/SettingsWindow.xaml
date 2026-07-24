@@ -1,0 +1,37 @@
+<Window
+    x:Class="ScreenStudio.App.Views.SettingsWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="Screen Studio — Settings">
+
+    <ScrollViewer Padding="24">
+        <StackPanel Spacing="16" MaxWidth="560">
+            <TextBlock Text="Settings" FontSize="28" FontWeight="SemiBold"/>
+
+            <!-- Defaults -->
+            <TextBlock Text="Defaults" FontSize="18" FontWeight="SemiBold"/>
+            <ComboBox x:Name="SmoothingBox" Header="Default smoothing intensity" SelectionChanged="OnSmoothingChanged">
+                <ComboBoxItem Content="None"/>
+                <ComboBoxItem Content="Light"/>
+                <ComboBoxItem Content="Medium"/>
+                <ComboBoxItem Content="Heavy"/>
+            </ComboBox>
+            <ToggleSwitch x:Name="ZoomModeSwitch" Header="Default auto-zoom" Toggled="OnZoomModeToggled"/>
+
+            <!-- Devices -->
+            <TextBlock Text="Devices" FontSize="18" FontWeight="SemiBold" Margin="0,8,0,0"/>
+            <ComboBox x:Name="MicBox" Header="Preferred microphone" SelectionChanged="OnMicChanged"/>
+
+            <!-- About -->
+            <TextBlock Text="About" FontSize="18" FontWeight="SemiBold" Margin="0,8,0,0"/>
+            <TextBlock x:Name="SettingsPathText" Opacity="0.6" IsTextSelectionEnabled="True"/>
+
+            <!-- Save -->
+            <Button Content="Save" Style="{StaticResource AccentButtonStyle}" Click="OnSaveClicked" Margin="0,8,0,0"/>
+            <TextBlock x:Name="StatusText" Opacity="0.7"/>
+        </StackPanel>
+    </ScrollViewer>
+</Window>

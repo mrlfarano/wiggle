@@ -1,0 +1,44 @@
+# === Secrets / env ===
+.env
+.env.*
+*.pfx
+*.snk
+
+# === Build output ===
+bin/
+obj/
+publish/
+dist/
+coverage/
+*.user
+*.suo
+*.cache
+
+# === Distributables ===
+*.zip
+*.msix
+*.appx
+*.nupkg
+
+# === IDE / editor ===
+.vs/
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# === XAML compiler temp ===
+*.xbf
+
+# === Imperial Commander runtime state (regenerable) ===
+.imperial-commander/runtime-state.json
+
+# === Playwright / test artifacts ===
+.playwright-mcp/
+TestResults/
+
+# === OS temp ===
+*.tmp
+*.bak

@@ -1,0 +1,72 @@
+<UserControl
+    x:Class="ScreenStudio.App.Views.StylePanel"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <StackPanel Spacing="12">
+        <!-- Aspect-ratio switcher (prominent; ui-prd §6.2) -->
+        <ComboBox x:Name="AspectBox" Header="Aspect ratio" SelectionChanged="OnAspectChanged"/>
+        <Pivot>
+            <!-- Cursor tab -->
+            <PivotItem Header="Cursor">
+                <StackPanel Spacing="10">
+                    <Slider Header="Cursor size" Minimum="0.5" Maximum="3" StepFrequency="0.25"
+                            Value="{x:Bind CursorVm.SizeMultiplier, Mode=TwoWay}"/>
+                    <ToggleSwitch Header="Auto-hide cursor" IsOn="{x:Bind CursorVm.AutoHideEnabled, Mode=TwoWay}"/>
+                    <NumberBox Header="Auto-hide timeout (ms)" Minimum="0" Maximum="10000"
+                               Value="{x:Bind CursorVm.AutoHideTimeoutMs, Mode=TwoWay}"/>
+                    <ToggleSwitch Header="Loop cursor (seamless loop)" IsOn="{x:Bind CursorVm.LoopEnabled, Mode=TwoWay}"/>
+                    <Slider x:Name="MotionBlurSlider" Header="Motion blur intensity" Minimum="0" Maximum="1" StepFrequency="0.1"
+                            ValueChanged="OnMotionBlurChanged"/>
+                </StackPanel>
+            </PivotItem>
+
+            <!-- Background tab (visual customization) -->
+            <PivotItem Header="Background">
+                <StackPanel Spacing="10">
+                    <ToggleSwitch x:Name="BackgroundToggle" Header="Apply background frame" Toggled="OnBackgroundToggled"/>
+                    <Slider x:Name="PaddingSlider" Header="Padding (px)" Minimum="0" Maximum="200" StepFrequency="10"
+                            ValueChanged="OnPaddingChanged"/>
+                    <Slider x:Name="ShadowSlider" Header="Shadow (px)" Minimum="0" Maximum="40" StepFrequency="5"
+                            ValueChanged="OnShadowChanged"/>
+                    <Slider x:Name="BorderSlider" Header="Border (px)" Minimum="0" Maximum="10" StepFrequency="1"
+                            ValueChanged="OnBorderChanged"/>
+                </StackPanel>
+            </PivotItem>
+
+            <!-- Effects tab -->
+            <PivotItem Header="Effects">
+                <StackPanel Spacing="10">
+                    <ToggleSwitch x:Name="KeystrokeToggle" Header="Show keystrokes" Toggled="OnKeystrokeToggled"/>
+                </StackPanel>
+            </PivotItem>
+
+            <!-- Smoothing tab -->
+            <PivotItem Header="Smoothing">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="Smoothing intensity" Opacity="0.7"/>
+                    <ComboBox x:Name="SmoothingBox" SelectionChanged="OnSmoothingChanged">
+                        <ComboBoxItem Content="None"/>
+                        <ComboBoxItem Content="Light"/>
+                        <ComboBoxItem Content="Medium"/>
+                        <ComboBoxItem Content="Heavy"/>
+                    </ComboBox>
+                </StackPanel>
+            </PivotItem>
+
+            <!-- Zoom tab -->
+            <PivotItem Header="Zoom">
+                <StackPanel Spacing="10">
+                    <ToggleSwitch x:Name="ZoomModeSwitch" Header="Auto-zoom" IsOn="True" Toggled="OnZoomModeToggled"/>
+                    <Slider Header="Zoom scale" Minimum="1" Maximum="4" StepFrequency="0.5"
+                            Value="{x:Bind ZoomVm.ZoomScale, Mode=TwoWay}"/>
+                    <NumberBox Header="Zoom hold (ms)" Minimum="100" Maximum="2000"
+                               Value="{x:Bind ZoomVm.HoldMs, Mode=TwoWay}"/>
+                </StackPanel>
+            </PivotItem>
+        </Pivot>
+    </StackPanel>
+</UserControl>

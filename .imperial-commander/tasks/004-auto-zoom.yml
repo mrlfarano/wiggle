@@ -1,0 +1,27 @@
+id: "004"
+title: "Implement Automatic Cursor Zoom"
+description: |
+  Detect cursor actions and automatically zoom the viewport.
+
+  Requirements:
+  - Detect "interesting" cursor actions (clicks, drags, pauses)
+  - Calculate appropriate zoom level and pan
+  - Smooth zoom transitions (ease-in/out)
+  - Timeline-based zoom editing UI
+
+  Technical approach:
+  - Analyze cursor velocity and events
+  - Apply heuristics to determine zoom-worthy moments
+  - Implement smooth camera pan/zoom transforms
+  - Store zoom keyframes in timeline
+
+  Deliverables:
+  - Zoom detection algorithm
+  - Smooth zoom animation system
+  - Timeline zoom controls
+  - Auto vs manual zoom modes
+priority: high
+status: done
+complexity: high
+tags: [algorithms, effects, zoom]
+dependencies: ["002", "003"]
