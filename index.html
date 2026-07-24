@@ -3,150 +3,229 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Wiggle — Professional Screen Recorder for Windows 11</title>
-<meta name="description" content="Record once, get a polished video automatically. Wiggle captures your screen and applies auto-zoom, smooth cursor motion, and beautiful framing — no editing required.">
+<title>wiggle — screen recorder for windows 11</title>
+<meta name="description" content="Record once, get a polished video automatically. Auto-zoom, smooth cursor, clean audio. Native Windows 11, open source.">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg: #0a0a0f; --surface: #12121a; --surface-2: #1a1a26; --border: #2a2a3a;
-    --text: #e8e8f0; --text-dim: #8888a0; --accent: #7c5cfc; --accent-light: #a78bfa;
-    --green: #4ade80; --pink: #f472b6; --orange: #fb923c; --blue: #60a5fa;
-    --radius: 16px; --mono: 'SF Mono','JetBrains Mono','Fira Code',Consolas,monospace;
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#0a0a0a;--bg-soft:#111;--bg-term:#0d0d0d;
+    --border:#1e1e1e;--border-bright:#2a2a2a;
+    --text:#c8c8c8;--text-dim:#666;--text-bright:#e8e8e8;
+    --accent:#00ff9c;--accent-dim:#00cc7a;
+    --red:#ff5555;--yellow:#f1fa8c;--blue:#8be9fd;--purple:#bd93f9;
+    --mono:'SF Mono','JetBrains Mono','Fira Code','Cascadia Code',Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;
   }
-  body { background: var(--bg); color: var(--text); font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-serif; line-height: 1.7; overflow-x: hidden; }
-  a { color: var(--accent-light); text-decoration: none; }
-  a:hover { text-decoration: underline; }
-  .hero { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 2rem; position: relative; background: radial-gradient(ellipse at 50% 0%, rgba(124,92,252,0.15) 0%, transparent 50%), radial-gradient(ellipse at 80% 50%, rgba(244,114,182,0.08) 0%, transparent 50%); }
-  .hero-badge { display: inline-flex; align-items: center; gap: 0.5rem; background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 0.4rem 1rem; font-size: 0.85rem; color: var(--text-dim); margin-bottom: 1.5rem; }
-  .hero-badge span { color: var(--green); }
-  .hero h1 { font-size: clamp(3rem,8vw,5.5rem); font-weight: 800; letter-spacing: -0.03em; background: linear-gradient(135deg,#a78bfa 0%,#f472b6 50%,#fb923c 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 0.5rem; }
-  .hero-tagline { font-size: clamp(1.2rem,3vw,1.8rem); color: var(--text); font-weight: 300; margin-bottom: 1rem; }
-  .hero-sub { font-size: 1.1rem; color: var(--text-dim); max-width: 600px; margin-bottom: 2.5rem; }
-  .hero-cta { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
-  .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.9rem 2rem; border-radius: 12px; font-size: 1rem; font-weight: 600; transition: all 0.2s; cursor: pointer; border: none; }
-  .btn-primary { background: linear-gradient(135deg,var(--accent),var(--pink)); color: white; }
-  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(124,92,252,0.3); }
-  .btn-secondary { background: var(--surface); border: 1px solid var(--border); color: var(--text); }
-  .btn-secondary:hover { border-color: var(--accent); }
-  section { padding: 5rem 2rem; max-width: 1100px; margin: 0 auto; }
-  .section-title { font-size: 2.5rem; font-weight: 700; text-align: center; margin-bottom: 1rem; letter-spacing: -0.02em; }
-  .section-sub { text-align: center; color: var(--text-dim); font-size: 1.1rem; margin-bottom: 3rem; }
-  .features { display: grid; grid-template-columns: repeat(auto-fit,minmax(300px,1fr)); gap: 1.5rem; }
-  .feature { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.8rem; transition: all 0.2s; }
-  .feature:hover { border-color: var(--accent); transform: translateY(-3px); }
-  .feature-icon { font-size: 2rem; margin-bottom: 0.8rem; }
-  .feature h3 { font-size: 1.2rem; margin-bottom: 0.5rem; }
-  .feature p { color: var(--text-dim); font-size: 0.95rem; line-height: 1.6; }
-  .feature ul { list-style: none; margin-top: 0.5rem; }
-  .feature ul li { color: var(--text-dim); font-size: 0.88rem; padding: 0.2rem 0; }
-  .feature ul li::before { content: "\2713 "; color: var(--green); }
-  .stats { display: flex; justify-content: center; gap: 3rem; flex-wrap: wrap; margin: 3rem 0; }
-  .stat { text-align: center; }
-  .stat-num { font-family: var(--mono); font-size: 2.5rem; font-weight: 800; background: linear-gradient(135deg,var(--accent-light),var(--pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-  .stat-label { color: var(--text-dim); font-size: 0.9rem; }
-  .code-block { background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; font-family: var(--mono); font-size: 0.9rem; overflow-x: auto; margin: 2rem auto; max-width: 700px; }
-  .code-block .comment { color: var(--text-dim); }
-  .code-block .cmd { color: var(--green); }
-  footer { text-align: center; padding: 3rem 2rem; border-top: 1px solid var(--border); color: var(--text-dim); font-size: 0.9rem; }
-  footer a { margin: 0 0.5rem; }
-  nav { position: fixed; top: 0; width: 100%; z-index: 100; background: rgba(10,10,15,0.8); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 0.8rem 2rem; display: flex; align-items: center; justify-content: space-between; }
-  nav .logo { font-weight: 700; font-size: 1.2rem; color: var(--accent-light); }
-  nav .links { display: flex; gap: 1.5rem; }
-  nav .links a { color: var(--text-dim); font-size: 0.9rem; }
-  @media (max-width: 600px) { nav .links { display: none; } }
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.65;font-size:16px;overflow-x:hidden}
+  a{color:var(--accent);text-decoration:none;transition:color .15s}
+  a:hover{color:var(--text-bright)}
+
+  /* ---- nav ---- */
+  nav{position:fixed;top:0;width:100%;z-index:100;background:rgba(10,10,10,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);padding:.7rem 2rem;display:flex;align-items:center;justify-content:space-between}
+  nav .brand{font-family:var(--mono);font-weight:700;font-size:.95rem;color:var(--accent);letter-spacing:-.02em}
+  nav .brand::before{content:"▌";color:var(--text-dim);margin-right:2px}
+  nav .links{display:flex;gap:1.8rem}
+  nav .links a{font-family:var(--mono);font-size:.8rem;color:var(--text-dim);text-transform:lowercase}
+  nav .links a:hover{color:var(--accent)}
+  @media(max-width:600px){nav .links{display:none}}
+
+  /* ---- hero ---- */
+  .hero{padding:9rem 2rem 4rem;max-width:1000px;margin:0 auto}
+  .hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:center}
+  @media(max-width:768px){.hero-grid{grid-template-columns:1fr;gap:2rem}}
+  .hero-left h1{font-family:var(--mono);font-size:clamp(2rem,5vw,3.2rem);font-weight:800;color:var(--text-bright);letter-spacing:-.04em;line-height:1.1;margin-bottom:1rem}
+  .hero-left h1 .accent{color:var(--accent)}
+  .hero-left p{color:var(--text-dim);font-size:1.05rem;max-width:380px;margin-bottom:2rem}
+  .hero-cta{display:flex;gap:.8rem;flex-wrap:wrap}
+  .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.7rem 1.4rem;border-radius:6px;font-family:var(--mono);font-size:.85rem;font-weight:600;transition:all .15s;border:none;cursor:pointer}
+  .btn-primary{background:var(--accent);color:#000}
+  .btn-primary:hover{background:var(--text-bright);transform:translateY(-1px)}
+  .btn-ghost{background:transparent;border:1px solid var(--border-bright);color:var(--text)}
+  .btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+
+  /* ---- terminal mockup ---- */
+  .terminal{background:var(--bg-term);border:1px solid var(--border-bright);border-radius:8px;overflow:hidden;font-family:var(--mono);font-size:.82rem;box-shadow:0 8px 32px rgba(0,0,0,.5)}
+  .terminal-bar{display:flex;align-items:center;gap:6px;padding:.6rem .9rem;background:var(--bg-soft);border-bottom:1px solid var(--border)}
+  .terminal-dot{width:11px;height:11px;border-radius:50%}
+  .terminal-dot.r{background:#ff5f57}.terminal-dot.y{background:#febc2e}.terminal-dot.g{background:#28c840}
+  .terminal-title{margin-left:.5rem;font-size:.72rem;color:var(--text-dim)}
+  .terminal-body{padding:1.2rem;line-height:1.9;color:var(--text)}
+  .terminal-body .prompt{color:var(--accent)}
+  .terminal-body .flag{color:var(--blue)}
+  .terminal-body .str{color:var(--yellow)}
+  .terminal-body .ok{color:var(--accent)}
+  .terminal-body .dim{color:var(--text-dim)}
+  .terminal-body .red{color:var(--red)}
+  .cursor-blink{display:inline-block;width:8px;height:1.1em;background:var(--accent);vertical-align:text-bottom;animation:blink 1s step-end infinite}
+  @keyframes blink{50%{opacity:0}}
+
+  /* ---- sections ---- */
+  section{padding:4rem 2rem;max-width:1000px;margin:0 auto}
+  .sec-label{font-family:var(--mono);font-size:.78rem;color:var(--accent-dim);text-transform:uppercase;letter-spacing:.12em;margin-bottom:.5rem}
+  .sec-title{font-family:var(--mono);font-size:1.8rem;font-weight:700;color:var(--text-bright);letter-spacing:-.02em;margin-bottom:2rem}
+
+  /* ---- features ---- */
+  .feat-group{margin-bottom:2rem}
+  .feat-group h3{font-family:var(--mono);font-size:.95rem;color:var(--accent);margin-bottom:.6rem;font-weight:600}
+  .feat-list{list-style:none}
+  .feat-list li{font-size:.92rem;color:var(--text);padding:.3rem 0;padding-left:1.6rem;position:relative}
+  .feat-list li::before{content:"▸";position:absolute;left:0;color:var(--accent-dim)}
+  .feat-list li code{font-family:var(--mono);font-size:.85rem;background:var(--bg-soft);padding:1px 6px;border-radius:3px;color:var(--blue);border:1px solid var(--border)}
+
+  /* ---- stats ---- */
+  .stats-row{display:flex;gap:2.5rem;flex-wrap:wrap;padding:2rem 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+  .stat{font-family:var(--mono)}
+  .stat .num{font-size:1.8rem;font-weight:800;color:var(--accent)}
+  .stat .lbl{font-size:.78rem;color:var(--text-dim);text-transform:lowercase}
+
+  /* ---- quickstart ---- */
+  .qs-block{background:var(--bg-term);border:1px solid var(--border-bright);border-radius:8px;padding:1.2rem 1.5rem;font-family:var(--mono);font-size:.85rem;line-height:2;color:var(--text);overflow-x:auto}
+  .qs-block .c{color:var(--text-dim)}
+  .qs-block .cmd{color:var(--accent)}
+
+  /* ---- footer ---- */
+  footer{text-align:left;padding:3rem 2rem;border-top:1px solid var(--border);max-width:1000px;margin:0 auto}
+  footer p{font-family:var(--mono);font-size:.8rem;color:var(--text-dim)}
+  footer a{margin-right:1rem}
 </style>
 </head>
 <body>
 
 <nav>
-  <div class="logo">🎬 Wiggle</div>
+  <div class="brand">wiggle</div>
   <div class="links">
-    <a href="#features">Features</a>
-    <a href="#quick-start">Quick Start</a>
-    <a href="https://github.com/mrlfarano/wiggle">GitHub</a>
-    <a href="https://github.com/mrlfarano/wiggle/releases/tag/v0.1.0">Download</a>
+    <a href="#features">features</a>
+    <a href="#start">install</a>
+    <a href="https://github.com/mrlfarano/wiggle">github</a>
+    <a href="https://github.com/mrlfarano/wiggle/releases/tag/v0.1.0">v0.1.0</a>
   </div>
 </nav>
 
 <div class="hero">
-  <div class="hero-badge">⭐ v0.1.0 · <span>Available now</span></div>
-  <h1>Wiggle</h1>
-  <p class="hero-tagline">Record once, get a polished video automatically.</p>
-  <p class="hero-sub">
-    A professional screen recorder for Windows 11 that automatically applies
-    auto-zoom, smooth cursor motion, and beautiful framing.
-    No editing required — your raw recordings export as finished-looking videos.
-  </p>
-  <div class="hero-cta">
-    <a href="https://github.com/mrlfarano/wiggle/releases/tag/v0.1.0" class="btn btn-primary">⬇️ Download v0.1.0</a>
-    <a href="https://github.com/mrlfarano/wiggle" class="btn btn-secondary">📦 View on GitHub</a>
+  <div class="hero-grid">
+    <div class="hero-left">
+      <h1>record once.<br><span class="accent">get polished video.</span></h1>
+      <p>A screen recorder for Windows 11 that automatically applies zoom, smooths your cursor, and cleans your audio. No editing. No timeline. No babysitting.</p>
+      <div class="hero-cta">
+        <a href="https://github.com/mrlfarano/wiggle/releases/tag/v0.1.0" class="btn btn-primary">download v0.1.0</a>
+        <a href="https://github.com/mrlfarano/wiggle" class="btn btn-ghost">view source</a>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="terminal">
+        <div class="terminal-bar">
+          <span class="terminal-dot r"></span>
+          <span class="terminal-dot y"></span>
+          <span class="terminal-dot g"></span>
+          <span class="terminal-title">wiggle — record</span>
+        </div>
+        <div class="terminal-body">
+<span class="prompt">$</span> wiggle <span class="flag">record</span> <span class="flag">--auto-zoom</span> <span class="flag">--smooth</span>
+<span class="dim">[ok]</span> capture started <span class="dim">·</span> 1920x1080 @ 60fps
+<span class="dim">[ok]</span> mic: active <span class="dim">·</span> noise gate: on
+<span class="dim">[ok]</span> system audio: loopback
+<span class="dim">[ok]</span> webcam: pip overlay ready
+<span class="dim">[...]</span> recording <span class="dim">·</span> click detected @ (480,270)
+<span class="ok">  ▸ zoom in 2.0x → cursor focus</span>
+<span class="dim">[...]</span> recording <span class="dim">·</span> 2:34 elapsed
+<span class="prompt">$</span> wiggle <span class="flag">stop</span>
+<span class="ok">[done]</span> 4620 frames captured
+<span class="ok">[done]</span> smoothing applied <span class="dim">·</span> 3 zoom keyframes
+<span class="prompt">$</span> wiggle <span class="flag">export</span> <span class="flag">--mp4</span> <span class="flag">--1080p</span>
+<span class="dim">[render]</span> frame 4620/4620 <span class="ok">✓</span>
+<span class="ok">[done]</span> polished.mp4 <span class="dim">·</span> 47s render time<span class="cursor-blink"></span>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
 <section id="features">
-  <h2 class="section-title">Everything just works</h2>
-  <p class="section-sub">Wiggle handles the polish so you don't have to.</p>
-  <div class="features">
-    <div class="feature"><div class="feature-icon">🎯</div><h3>Auto Cursor Zoom</h3><p>Wiggle watches your cursor and automatically zooms in on clicks, drags, and pauses. Smooth ease-in/out transitions make every action feel intentional.</p></div>
-    <div class="feature"><div class="feature-icon">✨</div><h3>Smooth Cursor Motion</h3><p>Shaky mouse movement? Gone. Centripetal Catmull-Rom spline interpolation transforms jittery cursor paths into buttery-smooth curves. Click positions stay exact.</p></div>
-    <div class="feature"><div class="feature-icon">🎨</div><h3>Visual Styling</h3><p>Backgrounds, padding, drop shadows, borders. Make your recording look like a product demo, not a raw screen grab.</p><ul><li>Custom background colors</li><li>Configurable padding &amp; shadows</li><li>Border effects</li></ul></div>
-    <div class="feature"><div class="feature-icon">🔊</div><h3>Audio That Sounds Clean</h3><p>Built-in noise gate, normalization, and multi-track mixing. Your microphone and system audio come through clear and balanced.</p><ul><li>Noise gate with attack/release</li><li>Peak &amp; RMS normalization</li><li>Mic + system audio mixing</li></ul></div>
-    <div class="feature"><div class="feature-icon">📹</div><h3>Webcam PiP</h3><p>Overlay your webcam as a picture-in-picture. Viewers see your face alongside the action.</p></div>
-    <div class="feature"><div class="feature-icon">⚡</div><h3>Motion Blur</h3><p>A natural motion trail follows your cursor based on its velocity. Configurable intensity — from subtle to dramatic.</p></div>
-    <div class="feature"><div class="feature-icon">⌨️</div><h3>Keyboard Shortcut Display</h3><p>Show pressed keys as stylish keycap overlays. Perfect for tutorials and demos where shortcuts matter.</p></div>
-    <div class="feature"><div class="feature-icon">📐</div><h3>Aspect Ratio Modes</h3><p>One-click switching between 16:9 landscape and 9:16 portrait. All zooms auto-adjust when you change formats.</p><ul><li>TikTok / Reels / Shorts presets</li><li>Square (1:1)</li><li>Auto zoom reframing</li></ul></div>
-    <div class="feature"><div class="feature-icon">📝</div><h3>Timeline Editor</h3><p>Trim, cut, and fine-tune zoom keyframes. Drag to adjust timing, scrub the playhead, speed up or slow down sections.</p><ul><li>Trim &amp; cut segments</li><li>Drag-to-adjust zoom keyframes</li><li>Speed ramp (2x / 0.5x)</li></ul></div>
+  <div class="sec-label">// features</div>
+  <div class="sec-title">what it does automatically</div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:2.5rem">
+    @media(max-width:768px){grid-template-columns:1fr}
+    <div>
+      <div class="feat-group">
+        <h3>// capture</h3>
+        <ul class="feat-list">
+          <li>Full screen, window, or region at up to <code>60fps</code></li>
+          <li>Microphone + system audio via WASAPI loopback</li>
+          <li>Webcam picture-in-picture overlay</li>
+          <li>Keyboard shortcut display (keycap overlay)</li>
+          <li>Cursor tracking via <code>WH_MOUSE_LL</code> + QPC timestamps</li>
+        </ul>
+      </div>
+      <div class="feat-group">
+        <h3>// effects</h3>
+        <ul class="feat-list">
+          <li>Auto-zoom on clicks, drags, pauses with ease-in/out</li>
+          <li>Cursor smoothing (centripetal Catmull-Rom, 4 intensities)</li>
+          <li>Motion blur trail based on cursor velocity</li>
+          <li>Background, padding, shadow, border styling</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <div class="feat-group">
+        <h3>// audio</h3>
+        <ul class="feat-list">
+          <li>Noise gate (threshold / hysteresis / attack / release)</li>
+          <li>Peak + RMS normalization</li>
+          <li>Multi-track mixing with soft-clip</li>
+          <li>Level meters with dBFS readout</li>
+        </ul>
+      </div>
+      <div class="feat-group">
+        <h3>// export</h3>
+        <ul class="feat-list">
+          <li>H.264 / HEVC MP4 (NVENC/QSV/AMF hardware encode)</li>
+          <li>GIF (two-pass palette pipeline)</li>
+          <li>WebM (VP9)</li>
+          <li>Aspect presets: 16:9, 9:16, TikTok, Reels, Shorts</li>
+          <li>Timeline: trim, cut, speed ramp, zoom keyframe editing</li>
+        </ul>
+      </div>
+    </div>
   </div>
 </section>
 
 <section>
-  <div class="stats">
-    <div class="stat"><div class="stat-num">175</div><div class="stat-label">Tests passing</div></div>
-    <div class="stat"><div class="stat-num">47s</div><div class="stat-label">2-min clip export</div></div>
-    <div class="stat"><div class="stat-num">60fps</div><div class="stat-label">Capture target</div></div>
-    <div class="stat"><div class="stat-num">3</div><div class="stat-label">Export formats</div></div>
+  <div class="stats-row">
+    <div class="stat"><div class="num">175</div><div class="lbl">tests passing</div></div>
+    <div class="stat"><div class="num">47s</div><div class="lbl">2-min 720p export</div></div>
+    <div class="stat"><div class="num">0.53x</div><div class="lbl">real-time ratio</div></div>
+    <div class="stat"><div class="num">58MB</div><div class="lbl">installer size</div></div>
+    <div class="stat"><div class="num">MIT</div><div class="lbl">open source</div></div>
   </div>
 </section>
 
-<section id="quick-start">
-  <h2 class="section-title">Get started in 60 seconds</h2>
-  <p class="section-sub">No video editing experience needed.</p>
-  <div class="code-block">
-<span class="comment"># Download the installer (recommended)</span>
-<span class="comment"># → Wiggle-Setup-v0.1.0.exe (~58MB)</span>
-<span class="comment"># → Run it, find Wiggle in Start Menu</span>
+<section id="start">
+  <div class="sec-label">// install</div>
+  <div class="sec-title">get started</div>
+  <div class="qs-block">
+<span class="c"># option 1 — download the installer (recommended)</span>
+<span class="c"># → Wiggle-Setup-v0.1.0.exe (~58MB, no .NET needed)</span>
+<span class="c"># → double-click, next-next-finish, find in Start Menu</span>
 
-<span class="comment"># Or build from source:</span>
+<span class="c"># option 2 — build from source</span>
 <span class="cmd">git</span> clone https://github.com/mrlfarano/wiggle.git
 <span class="cmd">cd</span> wiggle
 <span class="cmd">dotnet</span> build ScreenStudio.sln -c Release
-  </div>
-  <div class="features" style="margin-top: 2rem;">
-    <div class="feature"><div class="feature-icon">1️⃣</div><h3>Press Record</h3><p>The floating overlay stays out of your way. Choose full screen, a window, or a region. Toggle mic, audio, and webcam.</p></div>
-    <div class="feature"><div class="feature-icon">2️⃣</div><h3>Present</h3><p>Just do your thing. Wiggle captures everything — cursor, clicks, audio — and logs it with high-precision timestamps.</p></div>
-    <div class="feature"><div class="feature-icon">3️⃣</div><h3>Press Stop → Export</h3><p>The preview already shows auto-applied zooms and smooth cursor. Tweak if you want, then export to MP4, GIF, or WebM.</p></div>
-  </div>
-</section>
-
-<section>
-  <h2 class="section-title">Built different</h2>
-  <p class="section-sub">Native Windows 11, not another Electron app.</p>
-  <div class="features">
-    <div class="feature"><div class="feature-icon">🚀</div><h3>Native Performance</h3><p>Built in C# / .NET 10 + WinUI 3. No Electron bloat — Wiggle runs fast and stays responsive during capture.</p></div>
-    <div class="feature"><div class="feature-icon">🔬</div><h3>Comprehensively Tested</h3><p>175 tests across unit, E2E integration, performance profiling, and PRD-based user features. Every claim is verified.</p></div>
-    <div class="feature"><div class="feature-icon">💚</div><h3>Open Source</h3><p>MIT licensed. No subscription, no cloud dependency, no telemetry. Your recordings stay on your machine.</p></div>
+<span class="cmd">dotnet</span> run --project src/ScreenStudio.App -c Release
   </div>
 </section>
 
 <footer>
   <p>
-    <a href="https://github.com/mrlfarano/wiggle">GitHub</a> ·
-    <a href="https://github.com/mrlfarano/wiggle/releases">Releases</a> ·
-    <a href="https://github.com/mrlfarano/wiggle/blob/main/CHANGELOG.md">Changelog</a> ·
-    <a href="https://github.com/mrlfarano/wiggle/blob/main/LICENSE">MIT License</a>
+    <a href="https://github.com/mrlfarano/wiggle">github</a>
+    <a href="https://github.com/mrlfarano/wiggle/releases">releases</a>
+    <a href="https://github.com/mrlfarano/wiggle/blob/main/CHANGELOG.md">changelog</a>
+    <a href="https://github.com/mrlfarano/wiggle/blob/main/LICENSE">license</a>
   </p>
-  <p style="margin-top: 1rem;">Wiggle — because your cursor deserves to look good. 🎬</p>
-  <p style="margin-top: 0.5rem; font-size: 0.8rem;">© 2026 Luis Arano</p>
+  <p style="margin-top:.8rem;color:var(--text-dim)">wiggle v0.1.0 · built in C#/.NET 10 + WinUI 3 · © 2026 Luis Arano</p>
 </footer>
 
 </body>
