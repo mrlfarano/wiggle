@@ -10,13 +10,13 @@ colors:
   border-bright: "#2a2a2a"
   text: "#d0d0d0"
   text-bright: "#f0f0f0"
-  text-dim: "#555555"
+  text-dim: "#6a6a6a"
   accent: "#00ff9c"
   accent-muted: "#00b870"
   accent-glow: "rgba(0,255,156,0.08)"
   syntax-string: "#f1fa8c"
   syntax-keyword: "#8be9fd"
-  syntax-dim: "#555555"
+  syntax-dim: "#6a6a6a"
   error: "#ff5555"
   warning: "#ffb86c"
 typography:
@@ -116,7 +116,7 @@ components:
 Wiggle is a native Windows 11 screen recorder for developers and content creators. The design system is dark, monospace-forward, and terminal-native. It should feel like a tool a developer respects — confident, restrained, and fast. The accent color is used sparingly to signal interactivity, never decoratively.
 
 ## Colors
-The palette is intentionally narrow: near-black backgrounds, gray text, and a single neon green accent. `#0a0a0a` is the canvas; `#121212` and `#181818` provide subtle elevation. The accent `#00ff9c` is reserved for interactive elements, key data points, and the brand wordmark — never for decoration. Text uses a three-tier hierarchy: `#f0f0f0` (primary), `#d0d0d0` (body), `#555555` (meta/captions). This contrast ratio ensures readability without harshness.
+The palette is intentionally narrow: near-black backgrounds, gray text, and a single neon green accent. `#0a0a0a` is the canvas; `#121212` and `#181818` provide subtle elevation. The accent `#00ff9c` is reserved for interactive elements, key data points, and the brand wordmark — never for decoration. Text uses a three-tier hierarchy: `#f0f0f0` (primary), `#d0d0d0` (body), `#6a6a6a` (meta/captions). All text colors meet WCAG AA contrast (4.5:1) against the background.
 
 ## Typography
 Two families: a monospace stack for headings, labels, stats, and code; a system sans for body copy. Monospace creates the "developer tool" identity and reads as technical confidence. The type scale is compact (display → body → mono-sm) to keep the page dense and scannable. Letter-spacing tightens on large display sizes to feel modern.
